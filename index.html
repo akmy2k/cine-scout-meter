@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#000000">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
+  <link rel="manifest" href="manifest.json">
+  <title>Cine Scout Meter</title>
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <meta name="apple-mobile-web-app-title" content="Cine Scout">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace; }
+    html, body {
+      width: 100%; height: 100%; overflow: hidden; background: #000; color: #fff;
+      touch-action: none; position: fixed; inset: 0;
+    }
+
+    #video, #file-input { display: none; }
+
+    /* Startup Gate */
+    #launch-gate {
+      position: fixed; inset: 0; z-index: 200;
+      background: rgba(8, 8, 8, 0.96); backdrop-filter: blur(16px);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 24px; text-align: center; gap: 16px;
+    }
+    .gate-title { font-size: 20px; font-weight: 800; letter-spacing: 0.5px; }
+    .gate-sub { font-size: 13px; color: #bbb; max-width: 340px; line-height: 1.45; }
+    #start-app-btn {
+      background: #2563eb; color: #fff; border: 2px solid #60a5fa;
+      padding: 14px 28px; border-radius: 30px; font-size: 15px; font-weight: 800;
+      cursor: pointer; box-shadow: 0 4px 20px rgba(37, 99, 235, 0.5);
+    }
+    .lock-tip {
+      font-size: 11px; color: #fde047; background: rgba(253, 224, 71, 0.12);
+      border: 1px solid rgba(253, 224, 71, 0.35); padding: 10px 14px;
+      border-radius: 10px; max-width: 340px; line-height: 1.4;
+    }
+
+    /* Full-Screen Edge-to-Edge Viewfinder */
+    #view-canvas {
+      position: fixed; inset: 0; width: 100%; height: 100%;
+      z-index: 1; cursor: crosshair; display: block;
+    }
+
+    #grid {
+      position: fixed; inset: 0; z-index: 2; pointer-events: none; display: none;
+      background-size: 33.33% 33.33%;
+      background-image: 
+        linear-gradient(to right, rgba(255,255,255,0.22) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255,255,255,0.22) 1px, transparent 1px);
+    }
+
+    /* Quick Rotator & Lock Buttons */
+    #quick-rot-btn {
+      position: fixed; top: max(10px, env(safe-area-inset-top)); left: 10px; z-index: 10;
+      background: rgba(0, 0, 0, 0.65); backdrop-filter: blur(6px);
+      border: 1px solid rgba(255,255,255,0.3); color: #fff;
+      padding: 5px 9px; border-radius: 14px; font-size: 11px; font-weight: 800;
+      cursor: pointer; transition: transform 0.3s ease;
+    }
+    #lock-toggle-btn {
+      position: fixed; top: max(10px, env(safe-area-inset-top)); left: 66px; z-index: 10;
+      background: rgba(0, 0, 0, 0.65); backdrop-filter: blur(6px);
+      border: 1px solid rgba(255,255,255,0.3); color: #fff;
+      padding: 5px 9px; border-radius: 14px; font-size: 11px; font-weight: 800;
+      cursor: pointer; transition: all 0.2s ease;
+    }
+
+    /* Compact EL Zone Legend */
+    #el-legend {
+      position: fixed; top: 50%; left: 10px;
+      transform: translateY(-50%); z-index: 4;
+      background: rgba(0, 0, 0, 0.82); backdrop-filter: blur(8px);
+      padding: 7px 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.3);
+      display: none; flex-direction: column; gap: 3px; font-size: 12px; font-weight: 800;
+      pointer-events: none; box-shadow: 0 4px 14px rgba(0,0,0,0.5);
+      transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    .el-row { display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+    .el-swatch { width: 15px; height: 12px; border-radius: 3px; border: 1px solid rgba(255,255,255,0.7); flex-shrink: 0; }
+
+    /* Ratio Helper Pill & Clear Button */
+    #ratio-hud {
+      position: fixed; bottom: max(12px, env(safe-area-inset-bottom)); left: 50%;
+      transform: translateX(-50%); z-index: 5; display: none;
+      background: rgba(0, 0, 0, 0.82); backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.3); border-radius: 20px;
+      padding: 6px 12px; font-size: 11px; font-weight: 700; color: #eee; pointer-events: auto;
+      align-items: center; gap: 10px; white-space: nowrap; box-shadow: 0 4px 14px rgba(0,0,0,0.5);
+      transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    #ratio-clear-inline {
+      background: #dc2626; border: 1px solid #f87171; color: #fff;
+      padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 800; cursor: pointer;
+    }
+
+    /* Floating Shutter Button */
+    #capture-btn {
+      position: fixed; right: 14px; top: 50%; transform: translateY(-50%);
+      z-index: 6; pointer-events: auto;
+      width: 56px; height: 56px; border-radius: 50%;
+      background: rgba(0, 0, 0, 0.35); backdrop-filter: blur(6px);
+      border: 3px solid rgba(255, 255, 255, 0.95);
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.6);
+      transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    #capture-btn::after {
+      content: ""; width: 42px; height: 42px; border-radius: 50%;
+      background: rgba(255, 255, 255, 0.9); transition: transform 0.1s ease;
+    }
+    #capture-btn:active::after { transform: scale(0.85); background: #fde047; }
+
+    /* Compact Bottom Color Index Overlay */
+    #hud-bottom {
+      position: fixed; bottom: max(10px, env(safe-area-inset-bottom)); left: 50%;
+      transform: translateX(-50%); width: min(390px, 88vw);
+      z-index: 5; pointer-events: none;
+      transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    #mini-meter {
+      pointer-events: auto; width: 100%;
+      background: rgba(0, 0, 0, 0.72); backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.24);
+      border-radius: 11px; padding: 7px 10px;
+      display: flex; flex-direction: column; gap: 6px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+    }
+
+    .live-bar {
+      display: flex; width: 100%; height: 16px; border-radius: 4px; overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.6);
+    }
+    .bar-seg {
+      height: 100%; transition: width 0.3s ease, background-color 0.3s ease;
+      filter: saturate(1.45) contrast(1.08);
+    }
+
+    .meter-bottom-row {
+      display: flex; justify-content: space-between; align-items: center; gap: 6px;
+    }
+    .color-rows { display: flex; align-items: center; gap: 10px; }
+    .color-row-item { display: flex; align-items: center; gap: 5px; }
+    .color-box {
+      width: 18px; height: 18px; border-radius: 4px; border: 1.5px solid #fff; flex-shrink: 0;
+      filter: saturate(1.45) contrast(1.08);
+    }
+    .color-pct-beside {
+      font-size: 15px; line-height: 18px; height: 18px; font-weight: 800; color: #fff;
+      display: flex; align-items: center;
+    }
+    #mini-score {
+      font-size: 18px; line-height: 18px; font-weight: 900; color: #fde047;
+      letter-spacing: -0.3px; white-space: nowrap;
+    }
+
+    /* Virtual Landscape Mode (90° Overlay Rotation) */
+    body.virtual-landscape #hud-bottom { bottom: auto; top: 50%; left: 38px; width: min(390px, 74vh); transform: translate(-50%, -50%) rotate(90deg); }
+    body.virtual-landscape #capture-btn { right: auto; left: 50%; top: auto; bottom: max(16px, env(safe-area-inset-bottom)); transform: translateX(-50%); }
+    body.virtual-landscape #ratio-hud { bottom: auto; top: 50%; left: 28px; transform: translate(-50%, -50%) rotate(90deg); }
+    body.virtual-landscape #el-legend { top: 16%; left: 50%; transform: translate(-50%, -50%) rotate(90deg); }
+    body.virtual-landscape #quick-rot-btn, body.virtual-landscape #lock-toggle-btn { transform: rotate(90deg); }
+
+    /* Top Pull-Down Handle */
+    #menu-handle {
+      position: fixed; top: env(safe-area-inset-top, 0px); left: 50%; transform: translateX(-50%);
+      width: 72px; height: 22px; background: rgba(0, 0, 0, 0.65); backdrop-filter: blur(6px);
+      border: 1px solid rgba(255,255,255,0.3); border-top: none;
+      border-radius: 0 0 12px 12px; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; z-index: 21;
+    }
+    #menu-handle::after { content: ""; width: 28px; height: 3.5px; background: rgba(255,255,255,0.85); border-radius: 2px; }
+
+    /* Swipe Menu */
+    #menu {
+      position: fixed; inset: 0; width: 100%; height: 100%;
+      transform: translateY(-100%);
+      background: rgba(12, 12, 12, 0.97); backdrop-filter: blur(20px);
+      z-index: 20; transition: transform 0.26s cubic-bezier(0.2, 0.8, 0.2, 1);
+      padding: calc(env(safe-area-inset-top, 12px) + 22px) 18px 20px;
+      display: flex; flex-direction: column; gap: 11px; overflow-y: auto;
+    }
+    #menu.open { transform: translateY(0); }
+
+    .mode-tabs {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;
+      background: #1f1f1f; padding: 5px; border-radius: 10px; border: 1px solid #444;
+    }
+    .mode-tab {
+      background: transparent; color: #aaa; border: none; padding: 10px 4px;
+      border-radius: 7px; font-size: 11px; font-weight: 800; cursor: pointer;
+    }
+    .mode-tab.active { background: #2563eb; color: #fff; }
+
+    .drawer-section-title { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #999; }
+    .harmony-box {
+      display: flex; align-items: center; justify-content: space-between;
+      background: rgba(255,255,255,0.08); padding: 9px 13px; border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+    #wheel-canvas { width: 46px; height: 46px; border-radius: 50%; flex-shrink: 0; }
+
+    .palette-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .p-card {
+      background: rgba(255,255,255,0.08); padding: 8px; border-radius: 8px;
+      display: flex; flex-direction: column; gap: 2px; border: 1px solid rgba(255,255,255,0.12);
+    }
+    .p-head { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: bold; }
+    .p-swatch { width: 15px; height: 15px; border-radius: 4px; border: 1px solid #fff; filter: saturate(1.45); }
+    .p-name { font-size: 11px; color: #eee; }
+    .p-hex { font-size: 10px; color: #aaa; }
+
+    .menu-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; padding: 3px 0; }
+    .menu-group { display: flex; gap: 7px; flex-wrap: wrap; }
+    button.ui-btn, select.ui-select {
+      background: #2b2b2b; color: #fff; border: 1px solid #555; padding: 6px 11px;
+      border-radius: 7px; font-size: 12px; font-weight: 600; cursor: pointer;
+    }
+    button.ui-btn.accent { background: #2563eb; border-color: #60a5fa; }
+
+    /* Screenshot Bar */
+    body.screenshot-mode #capture-btn, body.screenshot-mode #menu-handle, body.screenshot-mode #ratio-hud, body.screenshot-mode #quick-rot-btn, body.screenshot-mode #lock-toggle-btn { display: none !important; }
+    #flash-overlay { position: fixed; inset: 0; background: #fff; opacity: 0; pointer-events: none; z-index: 90; transition: opacity 0.22s ease; }
+    #shot-bar {
+      position: fixed; top: max(12px, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.88); border: 1px solid rgba(255,255,255,0.35);
+      padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 800;
+      z-index: 95; display: none; align-items: center; gap: 10px; white-space: nowrap;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.6);
+    }
+    #save-photos-btn { background: #10b981; color: #000; border: none; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 800; cursor: pointer; }
+    #resume-btn { background: #333; color: #fff; border: 1px solid #666; padding: 4px 9px; border-radius: 12px; font-size: 11px; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+  <div id="launch-gate">
+    <div class="gate-title">Cine Scout Meter</div>
+    <div class="gate-sub">60-30-10 Color Balance • Lighting Ratios • EL Zone Exposure</div>
+    <button id="start-app-btn">Start Viewfinder</button>
+  </div>
+
+  <video id="video" autoplay playsinline muted></video>
+  <input type="file" id="file-input" accept="image/*">
+
+  <canvas id="view-canvas"></canvas>
+  <div id="grid"></div>
+  <div id="el-legend"></div>
+  <div id="flash-overlay"></div>
+
+  <div id="shot-bar">
+    <span>Frame Frozen</span>
+    <button id="save-photos-btn">💾 Save to Photos</button>
+    <button id="resume-btn">✕ Resume</button>
+  </div>
+
+  <button id="quick-rot-btn" title="Rotate Overlays 90°">🔄 90°</button>
+  <button id="lock-toggle-btn" title="Lock/Unlock Auto-Tilt">🔓 Unlocked</button>
+
+  <div id="ratio-hud">
+    <span id="ratio-status">Tap 2 spots for Ratio 1</span>
+    <button id="ratio-clear-inline">Clear</button>
+  </div>
+
+  <div id="capture-btn" title="Freeze & Save Snapshot"></div>
+  <div id="menu-handle" title="Swipe down or tap for menu"></div>
+
+  <div id="menu">
+    <div class="drawer-section-title">Active Feature (One at a Time)</div>
+    <div class="mode-tabs">
+      <button class="mode-tab active" data-mode="color">1. COLOR (60-30-10)</button>
+      <button class="mode-tab" data-mode="ratios">2. RATIOS (3x)</button>
+      <button class="mode-tab" data-mode="elzone">3. EL ZONE</button>
+    </div>
+
+    <div class="drawer-section-title">Viewfinder Overlay Orientation</div>
+    <div class="mode-tabs" style="grid-template-columns: repeat(2, 1fr);">
+      <button class="mode-tab active" id="layout-vert-btn">📱 Vertical (0°)</button>
+      <button class="mode-tab" id="layout-land-btn">🎬 Horizontal (90°)</button>
+    </div>
+
+    <div class="drawer-section-title">Color Palette & Harmony Details</div>
+    <div class="harmony-box">
+      <div>
+        <div style="font-size:15px; font-weight:800;" id="harmony-type">Analyzing...</div>
+        <div style="font-size:11px; color:#ccc;" id="harmony-desc">Guesstimate damped (~5% steps)</div>
+        <div style="font-size:11px; color:#38bdf8; margin-top:3px;" id="drawer-score">60-30-10 Match: --%</div>
+      </div>
+      <canvas id="wheel-canvas" width="92" height="92"></canvas>
+    </div>
+
+    <div class="palette-cards">
+      <div class="p-card">
+        <div class="p-head"><div class="p-swatch" id="sw-0"></div><span id="pct-0">60%</span></div>
+        <div class="p-name" id="name-0">Primary</div>
+        <div class="p-hex" id="hex-0">#000000</div>
+      </div>
+      <div class="p-card">
+        <div class="p-head"><div class="p-swatch" id="sw-1"></div><span id="pct-1">30%</span></div>
+        <div class="p-name" id="name-1">Secondary</div>
+        <div class="p-hex" id="hex-1">#000000</div>
+      </div>
+      <div class="p-card">
+        <div class="p-head"><div class="p-swatch" id="sw-2"></div><span id="pct-2">10%</span></div>
+        <div class="p-name" id="name-2">Accent</div>
+        <div class="p-hex" id="hex-2">#000000</div>
+      </div>
+    </div>
+
+    <div class="drawer-section-title">Controls & Source</div>
+
+    <div class="menu-row">
+      <span>Image Source</span>
+      <div class="menu-group">
+        <button class="ui-btn" id="upload-btn">📁 Camera Roll</button>
+        <button class="ui-btn" id="live-btn" style="display:none;">📷 Live Feed</button>
+        <button class="ui-btn" id="flip-btn">🔄 Flip Lens</button>
+      </div>
+    </div>
+
+    <div class="menu-row">
+      <span>Middle Gray Reference (Ratios)</span>
+      <select class="ui-select" id="base-fstop">
+        <option value="1.4">F1.4</option>
+        <option value="2.0">F2</option>
+        <option value="2.8" selected>F2.8</option>
+        <option value="4.0">F4</option>
+        <option value="5.6">F5.6</option>
+        <option value="8.0">F8</option>
+      </select>
+    </div>
+
+    <div class="menu-row">
+      <span>Rule of Thirds Grid</span>
+      <input type="checkbox" id="grid-toggle">
+    </div>
+
+    <div class="menu-row">
+      <span>Freeze Live Measurement</span>
+      <input type="checkbox" id="freeze-toggle">
+    </div>
+
+    <div class="menu-row">
+      <span>App Cache</span>
+      <button class="ui-btn" id="force-reload-btn">🔄 Force Update</button>
+    </div>
+
+    <button class="ui-btn accent" id="close-menu-btn" style="padding:10px; font-size:13px;">
+      ▲ Close Menu
+    </button>
+  </div>
+
+  <div id="hud-bottom">
+    <div id="mini-meter">
+      <div class="live-bar">
+        <div class="bar-seg" id="bseg-0" style="width:60%;"></div>
+        <div class="bar-seg" id="bseg-1" style="width:30%;"></div>
+        <div class="bar-seg" id="bseg-2" style="width:10%;"></div>
+      </div>
+      <div class="meter-bottom-row">
+        <div class="color-rows">
+          <div class="color-row-item">
+            <div class="color-box" id="cbox-0"></div>
+            <div class="color-pct-beside" id="cpct-0">60%</div>
+          </div>
+          <div class="color-row-item">
+            <div class="color-box" id="cbox-1"></div>
+            <div class="color-pct-beside" id="cpct-1">30%</div>
+          </div>
+          <div class="color-row-item">
+            <div class="color-box" id="cbox-2"></div>
+            <div class="color-pct-beside" id="cpct-2">10%</div>
+          </div>
+        </div>
+        <div id="mini-score">~100%</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const video = document.getElementById('video');
+    const viewCanvas = document.getElementById('view-canvas');
+    const viewCtx = viewCanvas.getContext('2d', { willReadFrequently: true });
+    const wheelCanvas = document.getElementById('wheel-canvas');
+    const wheelCtx = wheelCanvas.getContext('2d');
+    const menu = document.getElementById('menu');
+    const handle = document.getElementById('menu-handle');
+    const fileInput = document.getElementById('file-input');
+    const launchGate = document.getElementById('launch-gate');
+
+    let activeMode = 'color';
+    let isVirtualLandscape = false;
+    let autoTiltEnabled = true;
+    let isRotationLocked = false;
+    let facingMode = 'environment';
+    let isFrozen = false;
+    let isScreenshotMode = false;
+    let uploadedImg = null;
+    let baseFStop = 2.8;
+
+    const rawCanvas = document.createElement('canvas');
+    const rawCtx = rawCanvas.getContext('2d', { willReadFrequently: true });
+    const sampleCanvas = document.createElement('canvas');
+    const sampleCtx = sampleCanvas.getContext('2d', { willReadFrequently: true });
+    sampleCanvas.width = 32;
+    sampleCanvas.height = 32;
+
+    let ratioNodes = [];
+    let ratioEdges = [];
+    let draggingNodeIndex = -1;
+    const LINE_COLORS = ['#38bdf8', '#f472b6', '#fde047'];
+
+    const lockBtn = document.getElementById('lock-toggle-btn');
+    lockBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      isRotationLocked = !isRotationLocked;
+      autoTiltEnabled = !isRotationLocked;
+      lockBtn.innerText = isRotationLocked ? '🔒 Locked' : '🔓 Unlocked';
+      lockBtn.style.borderColor = isRotationLocked ? '#38bdf8' : 'rgba(255,255,255,0.3)';
+    });
+
+    document.getElementById('start-app-btn').addEventListener('click', async () => {
+      launchGate.style.display = 'none';
+      await startCamera();
+      if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+        DeviceOrientationEvent.requestPermission().then(response => {
+          if (response === 'granted') attachTiltListener();
+        }).catch(() => {});
+      } else {
+        attachTiltListener();
+      }
+    });
+
+    function attachTiltListener() {
+      window.addEventListener('deviceorientation', e => {
+        if (!autoTiltEnabled || isScreenshotMode) return;
+        const gamma = e.gamma;
+        if (gamma === null) return;
+        if (gamma > 45 && !isVirtualLandscape) {
+          setVirtualLandscape(true);
+        } else if (gamma < -45 && isVirtualLandscape) {
+          setVirtualLandscape(false);
+        } else if (Math.abs(gamma) < 15 && isVirtualLandscape) {
+          setVirtualLandscape(false);
+        }
+      }, { passive: true });
+    }
+
+    function setVirtualLandscape(val) {
+      isVirtualLandscape = val;
+      document.body.classList.toggle('virtual-landscape', val);
+      document.getElementById('layout-vert-btn').classList.toggle('active', !val);
+      document.getElementById('layout-land-btn').classList.toggle('active', val);
+    }
+
+    document.getElementById('quick-rot-btn').addEventListener('click', e => {
+      e.stopPropagation();
+      setVirtualLandscape(!isVirtualLandscape);
+    });
+    document.getElementById('layout-vert-btn').addEventListener('click', () => {
+      setVirtualLandscape(false);
+      menu.classList.remove('open');
+    });
+    document.getElementById('layout-land-btn').addEventListener('click', () => {
+      setVirtualLandscape(true);
+      menu.classList.remove('open');
+    });
+
+    document.getElementById('force-reload-btn').addEventListener('click', async () => {
+      if ('serviceWorker' in navigator) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        for (let r of regs) { if (r.scope === new URL('./', location.href).href) await r.unregister(); }
+      }
+      if ('caches' in window) {
+        const keys = await caches.keys();
+        for (let k of keys) { if (k.startsWith('cine-scout-meter-')) await caches.delete(k); }
+      }
+      window.location.reload(true);
+    });
+
+    function setMode(mode) {
+      activeMode = mode;
+      document.querySelectorAll('.mode-tabs [data-mode]').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.mode === mode);
+      });
+      document.getElementById('mini-meter').style.display = (mode === 'color') ? 'flex' : 'none';
+      document.getElementById('ratio-hud').style.display  = (mode === 'ratios') ? 'flex' : 'none';
+      document.getElementById('el-legend').style.display  = (mode === 'elzone') ? 'flex' : 'none';
+      menu.classList.remove('open');
+    }
+
+    document.querySelectorAll('.mode-tabs [data-mode]').forEach(btn => {
+      btn.addEventListener('click', () => setMode(btn.dataset.mode));
+    });
+
+    const EL_ZONES = [
+      { min: 4.5,  label: '+5 EV', rgb: [255, 255, 255], hex: '#FFFFFF' },
+      { min: 3.5,  label: '+4 EV', rgb: [255, 50, 50],   hex: '#FF3232' },
+      { min: 2.5,  label: '+3 EV', rgb: [255, 145, 0],   hex: '#FF9100' },
+      { min: 1.5,  label: '+2 EV', rgb: [255, 230, 0],   hex: '#FFE600' },
+      { min: 0.75, label: '+1 EV', rgb: [255, 175, 205], hex: '#FFAFCD' },
+      { min: 0.25, label: '+½ EV', rgb: [215, 245, 110], hex: '#D7F56E' },
+      { min: -0.25,label: ' 0 EV', rgb: [0, 210, 80],    hex: '#00D250' },
+      { min: -0.75,label: '-½ EV', rgb: [150, 155, 160], hex: '#969BA0' },
+      { min: -1.5, label: '-1 EV', rgb: [0, 215, 235],   hex: '#00D7EB' },
+      { min: -2.5, label: '-2 EV', rgb: [35, 115, 255],  hex: '#2373FF' },
+      { min: -3.5, label: '-3 EV', rgb: [135, 60, 255],  hex: '#873CFF' },
+      { min: -4.5, label: '-4 EV', rgb: [200, 0, 185],   hex: '#C800B9' },
+      { min: -99,  label: '-5 EV', rgb: [20, 10, 30],    hex: '#140A1E' }
+    ];
+
+    const legendEl = document.getElementById('el-legend');
+    EL_ZONES.forEach(z => {
+      const row = document.createElement('div');
+      row.className = 'el-row';
+      row.innerHTML = `<div class="el-swatch" style="background:${z.hex}"></div><span>${z.label}</span>`;
+      legendEl.appendChild(row);
+    });
+
+    const elLutR = new Uint8Array(256), elLutG = new Uint8Array(256), elLutB = new Uint8Array(256);
+    for (let i = 0; i < 256; i++) {
+      const v = i / 255;
+      const lin = v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+      const stops = Math.log2(Math.max(lin, 0.0001) / 0.18);
+      const zone = EL_ZONES.find(z => stops >= z.min) || EL_ZONES[EL_ZONES.length - 1];
+      elLutR[i] = zone.rgb[0]; elLutG[i] = zone.rgb[1]; elLutB[i] = zone.rgb[2];
+    }
+
+    let lastW = 0, lastH = 0;
+    function syncCanvasDimensions() {
+      const w = document.documentElement.clientWidth || window.innerWidth;
+      const h = document.documentElement.clientHeight || window.innerHeight;
+      if (Math.abs(w - lastW) > 40 || Math.abs(h - lastH) > 40) {
+        lastW = w; lastH = h;
+        viewCanvas.width = w;
+        viewCanvas.height = h;
+        rawCanvas.width = w;
+        rawCanvas.height = h;
+      }
+    }
+    window.addEventListener('resize', syncCanvasDimensions);
+    syncCanvasDimensions();
+
+    async function startCamera() {
+      if (video.srcObject) video.srcObject.getTracks().forEach(t => t.stop());
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: facingMode, width: { ideal: 1920 }, height: { ideal: 1080 } },
+          audio: false
+        });
+        video.srcObject = stream;
+        await video.play();
+      } catch (err) {
+        alert("Camera error: " + err.message);
+      }
+    }
+
+    handle.addEventListener('click', () => menu.classList.toggle('open'));
+    document.getElementById('close-menu-btn').addEventListener('click', () => menu.classList.remove('open'));
+
+    let touchStartY = 0;
+    window.addEventListener('touchstart', e => { touchStartY = e.touches[0].clientY; }, { passive: true });
+    window.addEventListener('touchend', e => {
+      const dy = e.changedTouches[0].clientY - touchStartY;
+      if (touchStartY < 80 && dy > 45) menu.classList.add('open');
+      else if (menu.classList.contains('open') && dy < -45) menu.classList.remove('open');
+    }, { passive: true });
+
+    document.getElementById('upload-btn').addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = evt => {
+        const img = new Image();
+        img.onload = () => {
+          uploadedImg = img;
+          isFrozen = false;
+          document.getElementById('freeze-toggle').checked = false;
+          document.getElementById('live-btn').style.display = 'inline-block';
+          menu.classList.remove('open');
+        };
+        img.src = evt.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    document.getElementById('live-btn').addEventListener('click', () => {
+      uploadedImg = null;
+      fileInput.value = '';
+      document.getElementById('live-btn').style.display = 'none';
+      startCamera();
+      menu.classList.remove('open');
+    });
+
+    document.getElementById('flip-btn').addEventListener('click', () => {
+      uploadedImg = null;
+      document.getElementById('live-btn').style.display = 'none';
+      facingMode = facingMode === 'environment' ? 'user' : 'environment';
+      startCamera();
+    });
+
+    document.getElementById('base-fstop').addEventListener('change', e => {
+      baseFStop = parseFloat(e.target.value);
+    });
+    document.getElementById('ratio-clear-inline').addEventListener('click', e => {
+      e.stopPropagation();
+      ratioNodes = [];
+      ratioEdges = [];
+      updateRatioHudText();
+    });
+    document.getElementById('grid-toggle').addEventListener('change', e => {
+      document.getElementById('grid').style.display = e.target.checked ? 'block' : 'none';
+    });
+    document.getElementById('freeze-toggle').addEventListener('change', e => {
+      isFrozen = e.target.checked;
+    });
+
+    function updateRatioHudText() {
+      const n = ratioNodes.length;
+      const statusEl = document.getElementById('ratio-status');
+      if (n === 0) statusEl.innerText = 'Tap 2 spots for Ratio 1';
+      else if (n === 1) statusEl.innerText = 'Tap 2nd spot for Cyan Ratio';
+      else if (n === 2) statusEl.innerText = 'Tap 3rd spot to attach Pink Ratio';
+      else if (n === 3) statusEl.innerText = 'Tap 4th spot to attach Yellow Ratio';
+      else statusEl.innerText = '3/3 Ratios • Drag any node or Clear';
+    }
+
+    const flashEl = document.getElementById('flash-overlay');
+    const shotBar = document.getElementById('shot-bar');
+
+    function enterScreenshotMode() {
+      isScreenshotMode = true;
+      isFrozen = true;
+      document.body.classList.add('screenshot-mode');
+
+      flashEl.style.opacity = '0.85';
+      setTimeout(() => { flashEl.style.opacity = '0'; }, 180);
+      shotBar.style.display = 'flex';
+    }
+
+    function exitScreenshotMode() {
+      isScreenshotMode = false;
+      isFrozen = document.getElementById('freeze-toggle').checked;
+      document.body.classList.remove('screenshot-mode');
+      shotBar.style.display = 'none';
+    }
+
+    document.getElementById('capture-btn').addEventListener('click', e => {
+      e.stopPropagation();
+      enterScreenshotMode();
+    });
+
+    document.getElementById('resume-btn').addEventListener('click', e => {
+      e.stopPropagation();
+      exitScreenshotMode();
+    });
+
+    document.getElementById('save-photos-btn').addEventListener('click', async e => {
+      e.stopPropagation();
+      const snapCanvas = document.createElement('canvas');
+      const ctx = snapCanvas.getContext('2d');
+      snapCanvas.width = viewCanvas.width;
+      snapCanvas.height = viewCanvas.height;
+
+      ctx.drawImage(viewCanvas, 0, 0);
+
+      if (activeMode === 'color') {
+        const pad = 14;
+        const boxH = 54;
+        const boxW = Math.min(390, snapCanvas.width - pad * 2);
+        const xLeft = (snapCanvas.width - boxW) / 2;
+        const yTop = snapCanvas.height - boxH - pad;
+
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.78)';
+        ctx.beginPath();
+        ctx.roundRect(xLeft, yTop, boxW, boxH, 10);
+        ctx.fill();
+
+        let xCur = xLeft + 10;
+        const barW = boxW - 20;
+        currentClusters.forEach(c => {
+          const w = (c.pct / 100) * barW;
+          ctx.fillStyle = c.hex;
+          ctx.fillRect(xCur, yTop + 8, w, 14);
+          xCur += w;
+        });
+
+        let itemX = xLeft + 10;
+        currentClusters.forEach(c => {
+          ctx.fillStyle = c.hex;
+          ctx.fillRect(itemX, yTop + 28, 16, 16);
+          ctx.strokeStyle = '#fff';
+          ctx.strokeRect(itemX, yTop + 28, 16, 16);
+          ctx.fillStyle = '#fff';
+          ctx.font = 'bold 14px -apple-system, sans-serif';
+          ctx.fillText(`${c.pct}%`, itemX + 22, yTop + 41);
+          itemX += 78;
+        });
+
+        ctx.fillStyle = '#fde047';
+        ctx.font = '900 16px -apple-system, sans-serif';
+        ctx.textAlign = 'right';
+        ctx.fillText(`~${currentScore}%`, xLeft + boxW - 10, yTop + 42);
+      }
+
+      snapCanvas.toBlob(async blob => {
+        const file = new File([blob], `cine-scout-${Date.now()}.png`, { type: 'image/png' });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          try {
+            await navigator.share({ files: [file] });
+            exitScreenshotMode();
+            return;
+          } catch (err) {}
+        }
+        const link = document.createElement('a');
+        link.download = file.name;
+        link.href = URL.createObjectURL(blob);
+        link.click();
+        exitScreenshotMode();
+      }, 'image/png');
+    });
+
+    viewCanvas.addEventListener('pointerdown', e => {
+      if (isScreenshotMode) {
+        shotBar.style.display = (shotBar.style.display === 'none') ? 'flex' : 'none';
+        return;
+      }
+      if (menu.classList.contains('open')) {
+        menu.classList.remove('open');
+        return;
+      }
+      if (activeMode !== 'ratios' || e.clientY < 40) return;
+
+      const rect = viewCanvas.getBoundingClientRect();
+      const nx = (e.clientX - rect.left) / rect.width;
+      const ny = (e.clientY - rect.top) / rect.height;
+
+      const hitIdx = ratioNodes.findIndex(n => Math.hypot((n.x - nx) * rect.width, (n.y - ny) * rect.height) < 40);
+      if (hitIdx !== -1) {
+        draggingNodeIndex = hitIdx;
+        return;
+      }
+
+      if (ratioNodes.length >= 4) {
+        ratioNodes = [{ x: nx, y: ny, smoothY: null }];
+        ratioEdges = [];
+        draggingNodeIndex = 0;
+      } else if (ratioNodes.length === 0) {
+        ratioNodes.push({ x: nx, y: ny, smoothY: null });
+        draggingNodeIndex = 0;
+      } else if (ratioNodes.length === 1) {
+        ratioNodes.push({ x: nx, y: ny, smoothY: null });
+        ratioEdges.push({ from: 0, to: 1, color: LINE_COLORS[0] });
+        draggingNodeIndex = 1;
+      } else {
+        let nearestIdx = 0;
+        let minDist = Infinity;
+        ratioNodes.forEach((n, idx) => {
+          const d = Math.hypot(n.x - nx, n.y - ny);
+          if (d < minDist) { minDist = d; nearestIdx = idx; }
+        });
+        const newIdx = ratioNodes.length;
+        const lineColor = LINE_COLORS[ratioEdges.length];
+        ratioNodes.push({ x: nx, y: ny, smoothY: null });
+        ratioEdges.push({ from: nearestIdx, to: newIdx, color: lineColor });
+        draggingNodeIndex = newIdx;
+      }
+      updateRatioHudText();
+    });
+
+    viewCanvas.addEventListener('pointermove', e => {
+      if (draggingNodeIndex === -1 || activeMode !== 'ratios' || isScreenshotMode) return;
+      const rect = viewCanvas.getBoundingClientRect();
+      ratioNodes[draggingNodeIndex].x = Math.max(0.04, Math.min(0.96, (e.clientX - rect.left) / rect.width));
+      ratioNodes[draggingNodeIndex].y = Math.max(0.05, Math.min(0.92, (e.clientY - rect.top) / rect.height));
+    });
+    window.addEventListener('pointerup', () => { draggingNodeIndex = -1; });
+
+    const F_STOP_GUESTIMATE = [1.4, 2, 2.8, 4, 5.6, 8, 11, 16, 22];
+    const RATIO_BUCKETS = [1, 1.5, 2, 3, 4, 6, 8, 12, 16];
+
+    function measureSpotStabilized(node) {
+      const px = Math.floor(node.x * rawCanvas.width);
+      const py = Math.floor(node.y * rawCanvas.height);
+      const r = 12;
+      const x0 = Math.max(0, px - r), y0 = Math.max(0, py - r);
+      const w = Math.min(rawCanvas.width - x0, r * 2 + 1), h = Math.min(rawCanvas.height - y0, r * 2 + 1);
+      const data = rawCtx.getImageData(x0, y0, w, h).data;
+
+      let sumY = 0, count = 0;
+      for (let i = 0; i < data.length; i += 4) {
+        const sr = data[i] / 255, sg = data[i+1] / 255, sb = data[i+2] / 255;
+        const rL = sr <= 0.04045 ? sr / 12.92 : Math.pow((sr + 0.055) / 1.055, 2.4);
+        const gL = sg <= 0.04045 ? sg / 12.92 : Math.pow((sg + 0.055) / 1.055, 2.4);
+        const bL = sb <= 0.04045 ? sb / 12.92 : Math.pow((sb + 0.055) / 1.055, 2.4);
+        sumY += 0.2126 * rL + 0.7152 * gL + 0.0722 * bL;
+        count++;
+      }
+      const rawY = Math.max(0.001, sumY / Math.max(1, count));
+      node.smoothY = (node.smoothY === null) ? rawY : (node.smoothY * 0.85 + rawY * 0.15);
+
+      const stops = Math.log2(node.smoothY / 0.18);
+      const exactF = baseFStop * Math.pow(2, stops / 2);
+      let bestF = F_STOP_GUESTIMATE[0];
+      for (let f of F_STOP_GUESTIMATE) {
+        if (Math.abs(f - exactF) < Math.abs(bestF - exactF)) bestF = f;
+      }
+      return { Y: node.smoothY, stops: Math.round(stops * 2) / 2, fStop: bestF };
+    }
+
+    function snapRatioGuesstimate(r) {
+      let best = RATIO_BUCKETS[0];
+      for (let b of RATIO_BUCKETS) {
+        if (Math.abs(b - r) < Math.abs(best - r)) best = b;
+      }
+      return best;
+    }
+
+    function drawMultiRatiosOverlay(ctx, width, height) {
+      if (ratioNodes.length === 0) return;
+      const pts = ratioNodes.map(n => ({
+        x: n.x * width,
+        y: n.y * height,
+        meter: measureSpotStabilized(n)
+      }));
+
+      const rotRad = isVirtualLandscape ? (Math.PI / 2) : 0;
+
+      ratioEdges.forEach(edge => {
+        const p1 = pts[edge.from];
+        const p2 = pts[edge.to];
+        if (!p1 || !p2) return;
+
+        const color = edge.color;
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(p1.x, p1.y);
+        ctx.lineTo(p2.x, p2.y);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 3.5;
+        ctx.setLineDash([8, 5]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        const rawRatio = p1.meter.Y >= p2.meter.Y ? (p1.meter.Y / p2.meter.Y) : (p2.meter.Y / p1.meter.Y);
+        const snapped = snapRatioGuesstimate(rawRatio);
+        const ratioStr = p1.meter.Y >= p2.meter.Y ? `${snapped}:1` : `1:${snapped}`;
+        const label = `(F${p1.meter.fStop}) ${ratioStr} (F${p2.meter.fStop})`;
+
+        const mx = (p1.x + p2.x) / 2, my = (p1.y + p2.y) / 2;
+        ctx.translate(mx, my);
+        ctx.rotate(rotRad);
+
+        ctx.font = '900 17px -apple-system, BlinkMacSystemFont, monospace';
+        const boxW = ctx.measureText(label).width + 22, boxH = 34;
+
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.88)';
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.roundRect(-boxW / 2, -boxH / 2, boxW, boxH, 8);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = '#fff';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(label, 0, 0);
+        ctx.restore();
+      });
+
+      pts.forEach(p => {
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(rotRad);
+
+        ctx.beginPath();
+        ctx.arc(0, 0, 16, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.65)';
+        ctx.fill();
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = '#ffffff';
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(0, 0, 3.5, 0, Math.PI * 2);
+        ctx.fillStyle = '#fde047';
+        ctx.fill();
+
+        const tag = `F${p.meter.fStop}`;
+        ctx.font = '900 14px monospace';
+        const tw = ctx.measureText(tag).width + 12;
+        ctx.fillStyle = 'rgba(0,0,0,0.85)';
+        ctx.fillRect(-tw / 2, -38, tw, 20);
+        ctx.fillStyle = '#fff';
+        ctx.textAlign = 'center';
+        ctx.fillText(tag, 0, -23);
+        ctx.restore();
+      });
+    }
+
+    const rgbToHex = (r, g, b) => '#' + [r, g, b].map(x => Math.round(x).toString(16).padStart(2, '0')).join('').toUpperCase();
+
+    function rgbToHsl(r, g, b) {
+      r /= 255; g /= 255; b /= 255;
+      const max = Math.max(r, g, b), min = Math.min(r, g, b);
+      let h = 0, s = 0, l = (max + min) / 2;
+      if (max !== min) {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch (max) {
+          case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+          case g: h = (b - r) / d + 2; break;
+          case b: h = (r - g) / d + 4; break;
+        }
+        h /= 6;
+      }
+      return { h: Math.round(h * 360), s: Math.round(s * 100), l: Math.round(l * 100) };
+    }
+
+    function getColorName(hsl) {
+      const { h, s, l } = hsl;
+      if (l <= 12) return 'Obsidian';
+      if (l >= 90 && s <= 15) return 'Ivory';
+      if (s <= 12) return l < 38 ? 'Charcoal' : l < 68 ? 'Slate' : 'Silver';
+      let hueName = 'Red';
+      if (h >= 15 && h < 42) hueName = l < 45 ? 'Rust' : 'Amber';
+      else if (h >= 42 && h < 68) hueName = s < 45 ? 'Sand' : 'Gold';
+      else if (h >= 68 && h < 155) hueName = s < 40 ? 'Olive' : 'Emerald';
+      else if (h >= 155 && h < 200) hueName = 'Teal';
+      else if (h >= 200 && h < 255) hueName = l < 40 ? 'Navy' : 'Cobalt';
+      else if (h >= 255 && h < 305) hueName = 'Violet';
+      else if (h >= 305 && h < 345) hueName = 'Crimson';
+      return hueName;
+    }
+
+    function hueDiff(h1, h2) {
+      const diff = Math.abs(h1 - h2) % 360;
+      return diff > 180 ? 360 - diff : diff;
+    }
+
+    function detectHarmony(clusters) {
+      const chromatic = clusters.filter(c => c.hsl.s >= 14 && c.hsl.l >= 10 && c.hsl.l <= 92);
+      if (chromatic.length === 0) return { name: 'Achromatic / Neutral', desc: 'Neutral & grayscale balance' };
+      if (chromatic.length === 1) return { name: 'Neutral + Accent', desc: 'Single hue anchored by neutrals' };
+      if (chromatic.length === 2) {
+        const d = hueDiff(chromatic[0].hsl.h, chromatic[1].hsl.h);
+        if (d <= 22) return { name: 'Monochromatic', desc: `Single hue family (~${d}°)` };
+        if (d <= 65) return { name: 'Analogous', desc: `Neighboring hues (~${d}°)` };
+        if (d >= 140) return { name: 'Complementary', desc: `Opposite hues (~${d}°)` };
+        return { name: 'Contrasting Pair', desc: `Two distinct hues (~${d}°)` };
+      }
+      const d01 = hueDiff(clusters[0].hsl.h, clusters[1].hsl.h);
+      const d12 = hueDiff(clusters[1].hsl.h, clusters[2].hsl.h);
+      const d02 = hueDiff(clusters[0].hsl.h, clusters[2].hsl.h);
+      const dists = [d01, d12, d02].sort((a, b) => a - b);
+
+      if (dists[2] <= 24) return { name: 'Monochromatic', desc: 'Unified single-hue palette' };
+      if (dists[0] + dists[1] <= 70) return { name: 'Analogous', desc: 'Harmonious neighboring hues' };
+      if (dists[0] >= 80 && dists[1] >= 90 && dists[2] >= 110) return { name: 'Triadic', desc: 'Balanced 3-way color split' };
+      if (dists[0] <= 65 && dists[1] >= 120 && dists[2] >= 135) return { name: 'Split-Complementary', desc: 'Base hue + opposing pair' };
+      if (dists[2] >= 145 && dists[0] <= 45) return { name: 'Complementary', desc: 'Opposite hues for contrast' };
+      return { name: 'Polychromatic', desc: 'Multi-hue triad' };
+    }
+
+    function drawColorWheel(clusters) {
+      const w = wheelCanvas.width, h = wheelCanvas.height;
+      const cx = w / 2, cy = h / 2, radius = w / 2 - 4;
+      wheelCtx.clearRect(0, 0, w, h);
+      for (let angle = 0; angle < 360; angle += 2) {
+        wheelCtx.beginPath();
+        wheelCtx.arc(cx, cy, radius - 4, (angle - 1) * Math.PI / 180, (angle + 2) * Math.PI / 180);
+        wheelCtx.strokeStyle = `hsl(${angle}, 90%, 55%)`;
+        wheelCtx.lineWidth = 6;
+        wheelCtx.stroke();
+      }
+      const pts = clusters.map(c => {
+        const rad = (c.hsl.h - 90) * Math.PI / 180;
+        const dist = (c.hsl.s / 100) * (radius - 8);
+        return { x: cx + Math.cos(rad) * dist, y: cy + Math.sin(rad) * dist, hex: c.hex };
+      });
+      wheelCtx.beginPath();
+      wheelCtx.moveTo(pts[0].x, pts[0].y);
+      wheelCtx.lineTo(pts[1].x, pts[1].y);
+      wheelCtx.lineTo(pts[2].x, pts[2].y);
+      wheelCtx.closePath();
+      wheelCtx.strokeStyle = 'rgba(255,255,255,0.75)';
+      wheelCtx.lineWidth = 1.5;
+      wheelCtx.stroke();
+
+      [6, 5, 4].forEach((sz, i) => {
+        wheelCtx.beginPath();
+        wheelCtx.arc(pts[i].x, pts[i].y, sz, 0, Math.PI * 2);
+        wheelCtx.fillStyle = pts[i].hex;
+        wheelCtx.fill();
+        wheelCtx.strokeStyle = '#fff';
+        wheelCtx.lineWidth = 1.5;
+        wheelCtx.stroke();
+      });
+    }
+
+    function drawSourceCover(source, sw, sh) {
+      if (!sw || !sh) return false;
+      const cw = rawCanvas.width, ch = rawCanvas.height;
+      const targetAspect = cw / ch;
+      const sourceAspect = sw / sh;
+      let sx = 0, sy = 0, sWidth = sw, sHeight = sh;
+
+      if (sourceAspect > targetAspect) {
+        sWidth = Math.round(sh * targetAspect);
+        sx = Math.round((sw - sWidth) / 2);
+      } else {
+        sHeight = Math.round(sw / targetAspect);
+        sy = Math.round((sh - sHeight) / 2);
+      }
+      rawCtx.drawImage(source, sx, sy, sWidth, sHeight, 0, 0, cw, ch);
+      return true;
+    }
+
+    let centroids = [{ r: 200, g: 200, b: 200 }, { r: 100, g: 100, b: 100 }, { r: 30, g: 30, b: 30 }];
+    let smoothClusters = [
+      { r: 200, g: 200, b: 200, pct: 60 },
+      { r: 100, g: 100, b: 100, pct: 30 },
+      { r: 30,  g: 30,  b: 30,  pct: 10 }
+    ];
+    let displayedPcts = [60, 30, 10];
+    let currentClusters = [
+      { r: 0, g: 0, b: 0, pct: 60, hex: '#000000', name: 'Primary', hsl: { h: 0, s: 0, l: 0 } },
+      { r: 0, g: 0, b: 0, pct: 30, hex: '#000000', name: 'Secondary', hsl: { h: 0, s: 0, l: 0 } },
+      { r: 0, g: 0, b: 0, pct: 10, hex: '#000000', name: 'Accent', hsl: { h: 0, s: 0, l: 0 } }
+    ];
+    let currentHarmony = { name: 'Analyzing', desc: '' };
+    let currentScore = 100;
+    let frameCount = 0;
+
+    function renderLoop() {
+      let hasFrame = false;
+      if (!isFrozen) {
+        if (uploadedImg) {
+          hasFrame = drawSourceCover(uploadedImg, uploadedImg.naturalWidth, uploadedImg.naturalHeight);
+        } else if (video.readyState >= 2 && video.videoWidth > 0) {
+          hasFrame = drawSourceCover(video, video.videoWidth, video.videoHeight);
+        }
+      } else {
+        hasFrame = true;
+      }
+
+      if (hasFrame) {
+        if (activeMode === 'elzone') {
+          const imgData = rawCtx.getImageData(0, 0, rawCanvas.width, rawCanvas.height);
+          const d = imgData.data;
+          for (let i = 0; i < d.length; i += 4) {
+            const luma = (d[i] * 54 + d[i+1] * 183 + d[i+2] * 19) >> 8;
+            d[i] = elLutR[luma]; d[i+1] = elLutG[luma]; d[i+2] = elLutB[luma];
+          }
+          viewCtx.putImageData(imgData, 0, 0);
+        } else {
+          viewCtx.drawImage(rawCanvas, 0, 0);
+        }
+
+        if (activeMode === 'ratios') {
+          drawMultiRatiosOverlay(viewCtx, viewCanvas.width, viewCanvas.height);
+        }
+
+        if (!isFrozen && (activeMode === 'color' || menu.classList.contains('open')) && frameCount % 8 === 0) {
+          sampleCtx.drawImage(rawCanvas, 0, 0, 32, 32);
+          const sData = sampleCtx.getImageData(0, 0, 32, 32).data;
+          const pixels = [];
+          for (let i = 0; i < sData.length; i += 4) {
+            pixels.push({ r: sData[i], g: sData[i+1], b: sData[i+2] });
+          }
+
+          let clusters = [[], [], []];
+          for (let iter = 0; iter < 4; iter++) {
+            clusters = [[], [], []];
+            for (let p of pixels) {
+              let minDist = Infinity, best = 0;
+              for (let c = 0; c < 3; c++) {
+                const dr = p.r - centroids[c].r, dg = p.g - centroids[c].g, db = p.b - centroids[c].b;
+                const dist = dr*dr + dg*dg + db*db;
+                if (dist < minDist) { minDist = dist; best = c; }
+              }
+              clusters[best].push(p);
+            }
+            for (let c = 0; c < 3; c++) {
+              if (clusters[c].length > 0) {
+                let sr = 0, sg = 0, sb = 0;
+                for (let p of clusters[c]) { sr += p.r; sg += p.g; sb += p.b; }
+                centroids[c] = { r: sr / clusters[c].length, g: sg / clusters[c].length, b: sb / clusters[c].length };
+              }
+            }
+          }
+
+          const rawResults = centroids.map((c, i) => ({
+            r: c.r, g: c.g, b: c.b,
+            pct: (clusters[i].length / pixels.length) * 100
+          })).sort((a, b) => b.pct - a.pct);
+
+          const alpha = 0.10;
+          for (let i = 0; i < 3; i++) {
+            smoothClusters[i].r = smoothClusters[i].r * (1 - alpha) + rawResults[i].r * alpha;
+            smoothClusters[i].g = smoothClusters[i].g * (1 - alpha) + rawResults[i].g * alpha;
+            smoothClusters[i].b = smoothClusters[i].b * (1 - alpha) + rawResults[i].b * alpha;
+            smoothClusters[i].pct = smoothClusters[i].pct * (1 - alpha) + rawResults[i].pct * alpha;
+          }
+
+          const drift = Math.abs(smoothClusters[0].pct - displayedPcts[0]) + Math.abs(smoothClusters[1].pct - displayedPcts[1]);
+          if (drift > 3.5) {
+            let p0 = Math.round(smoothClusters[0].pct / 5) * 5;
+            let p1 = Math.round(smoothClusters[1].pct / 5) * 5;
+            let p2 = Math.max(0, 100 - p0 - p1);
+            displayedPcts = [p0, p1, p2];
+          }
+
+          currentClusters = smoothClusters.map((sc, i) => {
+            const hsl = rgbToHsl(sc.r, sc.g, sc.b);
+            return {
+              r: sc.r, g: sc.g, b: sc.b,
+              pct: displayedPcts[i],
+              hex: rgbToHex(sc.r, sc.g, sc.b),
+              hsl: hsl,
+              name: getColorName(hsl)
+            };
+          });
+
+          const diff = Math.abs(displayedPcts[0] - 60) + Math.abs(displayedPcts[1] - 30) + Math.abs(displayedPcts[2] - 10);
+          currentScore = Math.max(0, Math.round((100 - (diff / 1.2)) / 5) * 5);
+
+          document.getElementById('mini-score').innerText = `~${currentScore}%`;
+          currentClusters.forEach((res, idx) => {
+            const bseg = document.getElementById(`bseg-${idx}`);
+            bseg.style.width = `${res.pct}%`;
+            bseg.style.backgroundColor = res.hex;
+
+            document.getElementById(`cbox-${idx}`).style.backgroundColor = res.hex;
+            document.getElementById(`cpct-${idx}`).innerText = `${res.pct}%`;
+
+            document.getElementById(`sw-${idx}`).style.backgroundColor = res.hex;
+            document.getElementById(`pct-${idx}`).innerText = `~${res.pct}%`;
+            document.getElementById(`name-${idx}`).innerText = res.name;
+            document.getElementById(`hex-${idx}`).innerText = res.hex;
+          });
+
+          currentHarmony = detectHarmony(currentClusters);
+          document.getElementById('harmony-type').innerText = currentHarmony.name;
+          document.getElementById('harmony-desc').innerText = currentHarmony.desc;
+          document.getElementById('drawer-score').innerText = `60-30-10 Match: ~${currentScore}%`;
+          drawColorWheel(currentClusters);
+        }
+        frameCount++;
+      }
+      requestAnimationFrame(renderLoop);
+    }
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    }
+
+    renderLoop();
+  </script>
+</body>
+</html>
