@@ -288,6 +288,14 @@
     body.has-camera-zoom #sound-controls {top:calc(env(safe-area-inset-top,0px) + 148px);}
     body.mode-sound #capture-btn {display:none;}
     @media(max-width:480px) { #camera-tools {flex-wrap:wrap;gap:5px;} #camera-choice{max-width:35%;} #zoom-tools {width:100%;justify-content:flex-end;} #zoom-tools input{width:100px;} }
+    #reference-quick { position:fixed;top:calc(env(safe-area-inset-top,0px) + 112px);left:max(10px,env(safe-area-inset-left));z-index:8;display:flex;align-items:center;gap:8px;max-width:calc(100vw - 20px);padding:6px 10px;background:rgba(12,21,23,.92);border:1px solid #637b73;border-radius:9px;font-size:11px;color:#e7f1ed; }
+    #reference-quick[hidden],body.menu-open #reference-quick,body.screenshot-mode #reference-quick,body.mode-sound #reference-quick {display:none;}
+    #reference-quick label {display:flex;gap:5px;align-items:center;}
+    #reference-quick-opacity {width:min(35vw,170px);height:30px;accent-color:#a4efcb;}
+    #reference-quick-value {min-width:32px;}
+    body.has-camera-zoom #reference-quick {top:calc(env(safe-area-inset-top,0px) + 148px);}
+    #reference-opacity {width:min(45vw,260px);accent-color:#a4efcb;min-height:36px;}
+    #reference-opacity-value {min-width:38px;text-align:right;}
   </style>
 </head>
 <body>
@@ -302,12 +310,17 @@
 
   <video id="video" autoplay playsinline muted></video>
   <input type="file" id="file-input" accept="image/*">
+  <input type="file" id="reference-input" accept="image/*" hidden>
 
   <canvas id="view-canvas"></canvas>
   <div id="camera-tools">
     <label for="exposure-slider" id="exposure-label">Preview EV</label><input id="exposure-slider" type="range" min="-2" max="2" step="0.1" value="0" aria-label="Exposure compensation"><output id="exposure-value">0.0</output>
     <select id="camera-choice" aria-label="Available cameras"><option value="">Camera</option></select>
     <label id="zoom-tools" hidden>Zoom <input type="range" id="camera-zoom" aria-label="Camera zoom"><output id="zoom-value">1×</output></label>
+  </div>
+  <div id="reference-quick" hidden>
+    <label><input type="checkbox" id="reference-quick-enabled" checked> Reference</label>
+    <input type="range" id="reference-quick-opacity" min="0" max="100" step="1" value="40" aria-label="Live reference opacity"><output id="reference-quick-value">40%</output>
   </div>
   <section id="sound-overlay" hidden aria-label="Sound level graph">
     <canvas id="sound-canvas" aria-label="Relative microphone level history"></canvas>
@@ -405,6 +418,11 @@
     </div>
 
     </section>
+    <div class="drawer-section-title">Reference photo overlay</div>
+    <div class="menu-row"><button class="ui-btn" id="reference-load">Load reference photo</button><button class="ui-btn" id="reference-remove" disabled>Remove</button></div>
+    <div class="menu-row"><label for="reference-enabled">Show photo overlay</label><input type="checkbox" id="reference-enabled" disabled></div>
+    <div class="menu-row"><label for="reference-opacity">Opacity</label><input type="range" id="reference-opacity" min="0" max="100" step="1" value="40" aria-label="Reference photo opacity"><output id="reference-opacity-value">40%</output></div>
+    <p id="reference-status" class="control-help">Load a reference to line up the live camera. Camera measurements ignore the overlay; captured frames include it when visible.</p>
     <div class="drawer-section-title">Controls & Source</div>
 
     <div class="menu-row">
@@ -479,10 +497,10 @@
     </div>
   </div>
 
-  <script src="color-grouping.js?v=11"></script>
-  <script src="composition.js?v=11"></script>
-  <script src="ratio-labels.js?v=11"></script>
-  <script src="camera-sound.js?v=11"></script>
+  <script src="color-grouping.js?v=12"></script>
+  <script src="composition.js?v=12"></script>
+  <script src="ratio-labels.js?v=12"></script>
+  <script src="camera-sound.js?v=12"></script>
   <script>
     const video = document.getElementById('video');
     const viewCanvas = document.getElementById('view-canvas');
@@ -508,6 +526,8 @@
     let isFrozen = false;
     let isScreenshotMode = false;
     let uploadedImg = null;
+    let referenceImg=null,referenceLoadVersion=0;
+    const referenceEnabled=document.getElementById('reference-enabled'),referenceOpacity=document.getElementById('reference-opacity');
     let baseFStop = 2.8;
     let lastGroupCount = 0;
     let resetColorGrouping = true;
@@ -760,6 +780,30 @@
       else if (menu.classList.contains('open') && touchStartY < 80 && dy < -45) menu.classList.remove('open');
     }, { passive: true });
 
+    const referenceInput=document.getElementById('reference-input');
+    document.getElementById('reference-load').addEventListener('click',()=>referenceInput.click());
+    function syncReferenceControls(){
+      document.getElementById('reference-opacity-value').textContent=referenceOpacity.value+'%';document.getElementById('reference-quick-opacity').value=referenceOpacity.value;document.getElementById('reference-quick-value').textContent=referenceOpacity.value+'%';document.getElementById('reference-quick-enabled').checked=referenceEnabled.checked;document.getElementById('reference-quick').hidden=!referenceImg;
+    }
+    referenceOpacity.addEventListener('input',syncReferenceControls);referenceEnabled.addEventListener('change',syncReferenceControls);
+    document.getElementById('reference-quick-opacity').addEventListener('input',e=>{referenceOpacity.value=e.target.value;syncReferenceControls();});
+    document.getElementById('reference-quick-enabled').addEventListener('change',e=>{referenceEnabled.checked=e.target.checked;syncReferenceControls();});
+    referenceInput.addEventListener('change',()=>{
+      const file=referenceInput.files[0];if(!file)return;
+      const version=++referenceLoadVersion,url=URL.createObjectURL(file),image=new Image();
+      image.onload=()=>{URL.revokeObjectURL(url);if(version!==referenceLoadVersion)return;referenceImg=image;referenceEnabled.disabled=false;referenceEnabled.checked=true;syncReferenceControls();document.getElementById('reference-remove').disabled=false;document.getElementById('reference-status').textContent='Reference loaded. Opacity adjusts only the overlay; camera analysis is unchanged. Visible reference is included in captured frames.';menu.classList.remove('open');};
+      image.onerror=()=>{URL.revokeObjectURL(url);if(version===referenceLoadVersion)showNotice('Could not open that image. Try a JPG, PNG or WebP photo.');};
+      image.src=url;referenceInput.value='';
+    });
+    document.getElementById('reference-remove').addEventListener('click',()=>{
+      referenceLoadVersion++;referenceImg=null;referenceEnabled.checked=false;referenceEnabled.disabled=true;syncReferenceControls();document.getElementById('reference-remove').disabled=true;document.getElementById('reference-status').textContent='Reference removed. Load a reference to line up the live camera.';
+    });
+    function drawReferenceOverlay(ctx,width,height){
+      if(!referenceImg||!referenceEnabled.checked||Number(referenceOpacity.value)===0)return;
+      const scale=Math.min(width/referenceImg.naturalWidth,height/referenceImg.naturalHeight),w=referenceImg.naturalWidth*scale,h=referenceImg.naturalHeight*scale;
+      ctx.save();ctx.globalAlpha=Number(referenceOpacity.value)/100;ctx.drawImage(referenceImg,(width-w)/2,(height-h)/2,w,h);ctx.restore();
+    }
+
     document.getElementById('upload-btn').addEventListener('click', () => fileInput.click());
     fileInput.addEventListener('change', e => {
       const file = e.target.files[0];
@@ -864,7 +908,9 @@
       snapCanvas.width = viewCanvas.width;
       snapCanvas.height = viewCanvas.height;
 
-      ctx.drawImage(activeMode === 'composition' && !document.getElementById('save-guide').checked ? rawCanvas : viewCanvas, 0, 0);
+      const cleanGuide=activeMode === 'composition' && !document.getElementById('save-guide').checked;
+      ctx.drawImage(cleanGuide ? rawCanvas : viewCanvas, 0, 0);
+      if(cleanGuide)drawReferenceOverlay(ctx,snapCanvas.width,snapCanvas.height);
 
       if (activeMode === 'color') {
         const pad = 14;
@@ -1274,6 +1320,7 @@
           viewCtx.drawImage(rawCanvas, 0, 0);
         }
 
+        drawReferenceOverlay(viewCtx,viewCanvas.width,viewCanvas.height);
         if (activeMode === 'composition' && document.getElementById('guide-visible').checked) {
           if(!isFrozen && frameCount % 8 === 0) {
             guideSample.width=80;guideSample.height=Math.max(32,Math.min(120,Math.round(80*rawCanvas.height/rawCanvas.width)));
