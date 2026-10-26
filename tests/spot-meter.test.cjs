@@ -1,0 +1,14 @@
+const fs=require("node:fs"),vm=require("node:vm"),assert=require("node:assert/strict");
+vm.runInThisContext(fs.readFileSync(require("node:path").join(__dirname,"../spot-meter.js"),"utf8"));
+const ev=cineSpotEV(4,1/48,800,0);
+assert(Math.abs(cineSpotFstop(ev,1/48,800,0)-4)<1e-9);
+assert(Math.abs(cineSpotFstop(ev,1/48,1600,0)-4*Math.sqrt(2))<1e-9);
+assert(Math.abs(cineSpotFstop(ev,1/48,800,2)-2)<1e-9);
+assert(Math.abs(cineSpotFstop(ev,1/96,800,0)-4/Math.sqrt(2))<1e-9);
+assert(Math.abs(cineSpotFstop(ev+1,1/48,800,0)-4*Math.sqrt(2))<1e-9);
+assert(Math.abs(cineSpotReading(128,128,128).kelvin-6500)<=100);
+assert.equal(cineSpotReading(255,255,255).kelvin,null);
+assert.equal(cineSpotReading(255,0,0).kelvin,null);
+assert.equal(cineSpotReading(0,0,0).kelvin,null);
+assert(cineSpotReading(180,180,180).luma>cineSpotReading(128,128,128).luma);
+console.log("PASS spot exposure round trip, ISO/shutter/ND direction, one-stop luminance response, D65 and invalid CCT rejection");

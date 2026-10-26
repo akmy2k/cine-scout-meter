@@ -323,6 +323,14 @@
       #color-controls label {font-size:14px;color:#edf5f1;}
       #color-grouping {min-height:36px;padding:6px!important;}
     }
+    #spot-panel {position:fixed;z-index:7;bottom:max(12px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);width:min(390px,calc(100vw - 32px));padding:12px;background:#0c1517eb;border:1px solid #52665e;border-radius:12px;display:flex;flex-direction:column;gap:8px;max-height:55dvh;overflow:auto;}
+    #spot-panel[hidden],body.menu-open #spot-panel,body.screenshot-mode #spot-panel {display:none;}
+    #spot-reading {font-size:24px;font-weight:700;}#spot-temperature{font-size:14px;color:#cce6da;}
+    .spot-settings,.spot-match{display:flex;gap:8px;align-items:end;}.spot-settings label{flex:1;min-width:0;}.spot-settings label,.spot-match label{font-size:12px;display:flex;flex-direction:column;gap:3px;}
+    #spot-panel input{width:100%;min-width:0;background:#1a292b;color:white;border:1px solid #688079;border-radius:5px;padding:7px;font-size:16px;user-select:text;}
+    #spot-panel summary{font-size:12px;padding:6px 0;cursor:pointer;}#spot-panel p{font-size:11px;line-height:1.4;color:#bccbc5;}.spot-match input{max-width:100px;}
+    body.mode-spot #capture-btn{display:none;}
+    @media(orientation:landscape){#spot-panel{left:auto;right:max(12px,env(safe-area-inset-right));transform:none;width:290px;max-height:calc(100dvh - 74px);padding:10px;gap:5px;}#spot-reading{font-size:21px;}}
   </style>
 </head>
 <body>
@@ -382,6 +390,7 @@
       <button class="mode-tab" data-mode="elzone">3. EL ZONE</button>
       <button class="mode-tab" data-mode="composition">4. COMPOSITION</button>
       <button class="mode-tab" data-mode="sound">5. SOUND</button>
+      <button class="mode-tab" data-mode="spot">6. SPOT METER</button>
     </div>
 
     <div class="drawer-section-title">Screen orientation</div>
@@ -467,6 +476,17 @@
     <button id="composition-tray-toggle" aria-expanded="true" aria-controls="composition-shapes">◇ Hide shapes <span id="active-guide-name">Rule of thirds</span></button>
     <div id="composition-shapes" role="group" aria-label="Composition shapes"></div>
   </div>
+  <section id="spot-panel" hidden aria-label="Spot meter">
+    <output id="spot-reading" aria-live="off">Aim at a midtone</output>
+    <output id="spot-temperature">K — · use a neutral grey/white target</output>
+    <div class="spot-settings">
+      <label>Shutter 1/<input id="spot-shutter" type="number" min="1" max="32000" value="48" inputmode="numeric"></label>
+      <label>ISO<input id="spot-iso" type="number" min="1" max="204800" value="800" inputmode="numeric"></label>
+      <label>ND stops<input id="spot-nd" type="number" min="0" max="20" step="0.1" value="0" inputmode="decimal"></label>
+    </div>
+    <details><summary>Match a trusted meter</summary><div class="spot-match"><label>Known f/<input id="spot-known-f" type="number" min="0.5" max="128" step="0.1" value="2.8" inputmode="decimal"></label><button id="spot-calibrate">Match</button></div></details>
+    <p id="spot-note">Tap the camera image to move the spot. Exposure needs a reference; Kelvin is an image estimate.</p>
+  </section>
   <div id="hud-bottom">
     <section id="color-controls" hidden role="region" aria-label="Colour palette details">
     <div class="drawer-section-title">Color Palette & Harmony Details</div>
@@ -532,10 +552,11 @@
     </div>
   </div>
 
-  <script src="color-grouping.js?v=18"></script>
-  <script src="composition.js?v=18"></script>
-  <script src="ratio-labels.js?v=18"></script>
-  <script src="camera-sound.js?v=18"></script>
+  <script src="color-grouping.js?v=19"></script>
+  <script src="composition.js?v=19"></script>
+  <script src="ratio-labels.js?v=19"></script>
+  <script src="spot-meter.js?v=19"></script>
+  <script src="camera-sound.js?v=19"></script>
   <script>
     const video = document.getElementById('video');
     const viewCanvas = document.getElementById('view-canvas');
@@ -548,6 +569,8 @@
     const launchGate = document.getElementById('launch-gate');
 
     let activeMode = 'color';
+    const spotMeter=new CineSpotMeter();
+    for(const id of ['camera-choice','flip-btn','upload-btn','camera-zoom'])document.getElementById(id).addEventListener(id==='camera-zoom'?'input':id==='camera-choice'?'change':'click',()=>spotMeter.reset());
     let isVirtualLandscape = false;
     let autoTiltEnabled = true;
     let isRotationLocked = false;
@@ -685,6 +708,7 @@
       document.getElementById('sound-overlay').hidden=mode!=='sound';document.body.classList.toggle('mode-sound',mode==='sound');document.body.classList.toggle('mode-elzone',mode==='elzone');
       if(mode==='sound')soundMeter.draw();
       activeMode = mode;
+      document.getElementById('spot-panel').hidden=mode!=='spot';document.body.classList.toggle('mode-spot',mode==='spot');
       document.getElementById('composition-tray').hidden=mode!=='composition';
       document.getElementById('composition-controls').hidden = mode !== 'composition';
       document.getElementById('color-controls').hidden = true;document.getElementById('color-info-toggle').setAttribute('aria-expanded','false');
@@ -1051,6 +1075,7 @@
         menu.classList.remove('open');
         return;
       }
+      if(activeMode==='spot'){const rect=viewCanvas.getBoundingClientRect();spotMeter.x=Math.max(.03,Math.min(.97,(e.clientX-rect.left)/rect.width));spotMeter.y=Math.max(.03,Math.min(.97,(e.clientY-rect.top)/rect.height));return;}
       if (activeMode !== 'ratios' || e.clientY < 40) return;
 
       const rect = viewCanvas.getBoundingClientRect();
@@ -1325,6 +1350,7 @@
       }
       if(previewZoom>1){const oldW=sWidth,oldH=sHeight;sWidth/=previewZoom;sHeight/=previewZoom;sx+=(oldW-sWidth)/2;sy+=(oldH-sHeight)/2;}
       rawCtx.drawImage(source, sx, sy, sWidth, sHeight, 0, 0, cw, ch);
+      if(activeMode==='spot'&&!isFrozen&&frameCount%8===0)spotMeter.measure(rawCtx,cw,ch);
       if(previewEV!==0){const image=rawCtx.getImageData(0,0,cw,ch),data=image.data;for(let i=0;i<data.length;i+=4){data[i]=previewLut[data[i]];data[i+1]=previewLut[data[i+1]];data[i+2]=previewLut[data[i+2]];}rawCtx.putImageData(image,0,0);}
       return true;
     }
@@ -1372,6 +1398,7 @@
         }
 
         drawReferenceOverlay(viewCtx,viewCanvas.width,viewCanvas.height);
+        if(activeMode==='spot')spotMeter.draw(viewCtx,viewCanvas.width,viewCanvas.height);
         if (activeMode === 'composition' && document.getElementById('guide-visible').checked) {
           if(!isFrozen && frameCount % 8 === 0) {
             guideSample.width=80;guideSample.height=Math.max(32,Math.min(120,Math.round(80*rawCanvas.height/rawCanvas.width)));

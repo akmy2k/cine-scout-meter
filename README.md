@@ -39,3 +39,11 @@ Checks: `node tests/composition.test.cjs` and `node tests/camera-sound.test.cjs`
 Controls → Reference photo overlay → Load reference photo. A separate image overlays the current camera/source at 40% opacity, contained to preserve its proportions. Adjust 0–100% using the inline Reference slider on the camera view, or the menu slider; Reference toggles it off/on and Remove clears it. The reference is kept only in this tab's memory, never uploaded. Camera measurements and composition analysis still use the underlying camera/source. Visible references are included in captured frames; composition guides remain separately selectable for capture. The reference control is hidden in menus, Sound and capture UI.
 
 Tap the small i above the colour bar to open or close palette names, percentages, harmony details and colour grouping without opening Controls.
+
+## Spot meter — sixth mode
+
+Tap the viewfinder to position the spot. Enter shutter as a denominator (48 means 1/48 second), ISO and ND attenuation in stops (ND 0.6 = 2 stops). Open Match a trusted meter, enter its f-stop for that same target/settings, then Match. The readout gives an estimated aperture and relative stop difference. Higher ISO raises the recommended f-number; more ND or a faster shutter lowers the f-number. Changes are calculated from linearized image luminance relative to that matched spot, before preview EV and reference overlays.
+
+This is a reference-based scout tool, not an independently calibrated exposure meter. Keep source camera exposure and white balance fixed; browser automatic processing can invalidate comparison. Re-match after camera/source/zoom changes. Kelvin is a rough processed-image CCT estimate for a neutral grey/white target, not measured illuminant temperature; coloured, clipped and dark targets suppress it. Auto white balance can neutralize the original colour cast. Formula reference: McCamy CCT approximation described by Analog Devices: https://www.analog.com/en/resources/technical-articles/2022/07/16/11/28/map-colors-of-a-cie-plot-and-color-temperature-using-an-rgb-color-sensor.html .
+
+Additional check: `node tests/spot-meter.test.cjs`.
