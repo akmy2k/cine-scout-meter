@@ -4,7 +4,7 @@ const SCOUT_GUIDES = {
   goldenTriangle: 'Golden triangles', harmonious: 'Harmonious triangles', diagonal: 'Diagonal',
   doubleDiagonal: 'Double diagonal', cross: 'Cross', focal: 'Focal mass', vee: 'V arrangement',
   pyramid: 'Pyramid', radial: 'Radiating', funnel: 'Funnel', scurve: 'S curve', lshape: 'L arrangement',
-  circle: 'Circular', ccurve: 'C curve', balance: 'Balance', unbalanced: 'Asymmetric balance'
+  roomCorner: 'Room corner / leading lines', circle: 'Circular', ccurve: 'C curve', balance: 'Balance', unbalanced: 'Asymmetric balance'
 };
 function scoutGuideGeometry(id, turn = 0, mirror = false, aspect = 1) {
   const paths = [], anchors = [];
@@ -41,6 +41,7 @@ function scoutGuideGeometry(id, turn = 0, mirror = false, aspect = 1) {
     case 'funnel': line([.1,.1],[.9,.1],[.9,.9],[.1,.9],[.1,.1]);line([.35,.35],[.65,.35],[.65,.65],[.35,.65],[.35,.35]);for(const [x,y] of [[0,0],[1,0],[1,1],[0,1]])line([.1+.8*x,.1+.8*y],[.35+.3*x,.35+.3*y]);anchors.push([.5,.5]);break;
     case 'scurve': curve(t=>[.5+.29*Math.sin(2*Math.PI*t),.08+.84*t]);break;
     case 'lshape': line([.2,.1],[.2,.82],[.9,.82]);anchors.push([.2,.82]);break;
+    case 'roomCorner': line([.62,.08],[.62,.72]);line([0,.95],[.62,.72],[1,.9]);line([0,.06],[.62,.25],[1,.05]);anchors.push([.62,.72]);break;
     case 'circle': circle(.5,.5,.35);break;
     case 'ccurve': circle(.52,.5,.36,Math.PI*.25,Math.PI*1.75);break;
     case 'balance': for(const x of [.25,.75]){line([x-.12,.3],[x+.12,.3],[x+.12,.75],[x-.12,.75],[x-.12,.3]);anchors.push([x,.52]);}break;
@@ -101,3 +102,27 @@ function scoutDrawGuide(ctx,w,h,geometry,alignment={paths:[],focus:0},glow=true)
   for(const [x,y] of geometry.anchors){const near=alignment.focusPoint && Math.hypot(x-alignment.focusPoint[0],y-alignment.focusPoint[1])<.10;const close=glow&&alignment.focus>.68&&near;ctx.shadowBlur=close?15:0;ctx.strokeStyle=close?'rgba(111,240,188,.98)':'rgba(235,240,242,.55)';ctx.beginPath();ctx.arc(x*w,y*h,Math.max(4,Math.min(w,h)*.009),0,Math.PI*2);ctx.stroke();}
   ctx.restore();
 }
+
+const SCOUT_GUIDE_TIPS = {
+ thirds:'Place a subject at an intersection or a horizon on a third.',
+ golden:'Use the tighter golden-ratio divisions for subject and horizon.',
+ spiral:'Let a curve lead the eye into the small end of the spiral.',
+ spiralgrid:'Nest the frame around a focal point using golden divisions.',
+ goldenTriangle:'Align a strong diagonal with the smaller crossing lines.',
+ harmonious:'Build a scene from opposing triangular directions.',
+ diagonal:'Follow a road, edge or gesture across the frame.',
+ doubleDiagonal:'Arrange two strong directions that cross in the scene.',
+ cross:'Align a central vertical and horizontal structure.',
+ focal:'Gather the strongest visual interest into one compact area.',
+ vee:'Use two edges converging toward a low focal point.',
+ pyramid:'Give a subject a broad base and a clear apex.',
+ radial:'Let several lines converge on one focal point.',
+ funnel:'Frame depth through an opening or a receding corridor.',
+ scurve:'Follow a winding path through the picture.',
+ lshape:'Anchor one side and the base with a strong L shape.',
+ roomCorner:'Shoot into the L of a room: match the vertical corner and the floor or ceiling lines on both walls. Mirror for the opposite corner.',
+ circle:'Arrange the main shapes around a circular flow.',
+ ccurve:'Use an open curve to frame the subject.',
+ balance:'Give two sides comparable visual weight.',
+ unbalanced:'Balance a larger shape against a smaller distant shape.'
+};

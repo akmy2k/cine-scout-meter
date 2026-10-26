@@ -1,4 +1,4 @@
-const CACHE = 'cine-scout-meter-v7';
+const CACHE = 'cine-scout-meter-v9';
 const ROOT = new URL('./', self.location.href);
 self.addEventListener('install', event => {
   event.waitUntil((async () => {

@@ -19,7 +19,9 @@ for(const id of Object.keys(SCOUT_GUIDES))for(const aspect of [.5,1,2])for(let t
   assert(guide.paths.flat().every(p=>p.every(Number.isFinite)));
   assert.equal(scoutGuideAlignment(guide,frame(()=>120)).score,0);
 }
-console.log('PASS: 20 guides, rotation, mirroring, portrait/landscape, blank-frame rejection');
+console.log(`PASS: ${Object.keys(SCOUT_GUIDES).length} guides, rotation, mirroring, portrait/landscape, blank-frame rejection`);
+assert(SCOUT_GUIDES.roomCorner);
+assert(scoutGuideGeometry('roomCorner').paths.length>=3);
 const thirds=scoutGuideGeometry('thirds');
 const aligned=scoutGuideAlignment(thirds,frame(x=>x<26?30:220));
 const off=scoutGuideAlignment(thirds,frame(x=>x<42?30:220));

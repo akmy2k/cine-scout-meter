@@ -168,6 +168,14 @@
     #color-controls { display:flex;flex-direction:column;gap:11px; }
     .control-help { font-size:12px; line-height:1.5; color:#aaa; max-width:65ch; }
     #composition-guide { width:100%; min-height:44px; }
+    #composition-legend { display:flex;flex-direction:column;gap:5px;max-height:330px;overflow-y:auto;touch-action:pan-y; }
+    .guide-choice { display:flex;align-items:center;gap:12px;flex-shrink:0;width:100%;padding:9px;background:#171d20;border:1px solid #3d484b;border-radius:7px;color:#e9eef0;text-align:left;cursor:pointer; }
+    .guide-choice[aria-pressed="true"] { border-color:#8bd8b7;background:#22352e; }
+    .guide-choice canvas { flex-shrink:0;width:72px;height:46px;background:#101619;border-radius:3px; }
+    .guide-choice strong { display:block;font-size:13px;margin-bottom:3px; }
+    .guide-choice small { display:block;font-size:11px;line-height:1.4;color:#b8c5c8; }
+    #menu-handle { height:44px;min-width:80px; }
+
     #app-notice { position:fixed; left:50%; bottom:max(80px,env(safe-area-inset-bottom)); transform:translateX(-50%); z-index:220; background:#181b1b; color:#edf3f1; border:1px solid #6a7872; border-radius:12px; padding:12px 16px; width:min(90vw,440px); font-size:13px; line-height:1.5; display:none; }
     #quick-rot-btn { left:max(10px,env(safe-area-inset-left)); min-height:36px; }
     #capture-btn { right:max(14px,env(safe-area-inset-right)); }
@@ -258,6 +266,7 @@
     <div class="gate-sub">Colour • Light • Composition</div>
     <p class="gate-sub">For a view without browser tabs: Safari → Share → Add to Home Screen. Open from that icon and rotate your phone.</p>
     <button id="start-app-btn">Start Viewfinder</button>
+    <p class="control-help">Double-tap the viewfinder to open controls.</p>
   </div>
 
   <video id="video" autoplay playsinline muted></video>
@@ -304,6 +313,9 @@
       <div class="drawer-section-title">Composition guide</div>
       <label for="composition-guide">Guide</label>
       <select id="composition-guide" class="ui-select"></select>
+      <p id="guide-instruction" class="control-help"></p>
+      <div class="menu-row"><label for="guide-visible">Show composition overlay</label><input type="checkbox" id="guide-visible" checked></div>
+      <div id="composition-legend" role="group" aria-label="Choose a composition to replicate"></div>
       <div class="menu-row">
         <button class="ui-btn" id="guide-turn">Rotate guide 90°</button>
         <label><input type="checkbox" id="guide-mirror"> Mirror</label>
@@ -420,9 +432,9 @@
     </div>
   </div>
 
-  <script src="color-grouping.js"></script>
-  <script src="composition.js"></script>
-  <script src="ratio-labels.js"></script>
+  <script src="color-grouping.js?v=9"></script>
+  <script src="composition.js?v=9"></script>
+  <script src="ratio-labels.js?v=9"></script>
   <script>
     const video = document.getElementById('video');
     const viewCanvas = document.getElementById('view-canvas');
@@ -514,7 +526,20 @@
     let guideAlignment={paths:[],focus:0,score:0};
     const guideSample=document.createElement('canvas'), guideSampleCtx=guideSample.getContext('2d',{willReadFrequently:true});
     function updateGuide(){guideGeometry=scoutGuideGeometry(guideSelect.value,guideTurn,guideMirror,window.innerWidth/window.innerHeight);guideAlignment={paths:[],focus:0,score:0};}
-    guideSelect.addEventListener('change',updateGuide);
+    function refreshGuideLegend(){
+      document.getElementById('guide-instruction').textContent=SCOUT_GUIDE_TIPS[guideSelect.value]||'';
+      document.querySelectorAll('.guide-choice').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.guide===guideSelect.value)));
+    }
+    const legend=document.getElementById('composition-legend');
+    for(const [id,label] of Object.entries(SCOUT_GUIDES)){
+      const button=document.createElement('button');button.type='button';button.className='guide-choice';button.dataset.guide=id;button.setAttribute('aria-pressed',String(id===guideSelect.value));
+      const thumbnail=document.createElement('canvas');thumbnail.width=144;thumbnail.height=92;thumbnail.setAttribute('aria-hidden','true');
+      scoutDrawGuide(thumbnail.getContext('2d'),144,92,scoutGuideGeometry(id,0,false,144/92),{paths:[],focus:0},false);
+      const words=document.createElement('span'),title=document.createElement('strong'),tip=document.createElement('small');title.textContent=label;tip.textContent=SCOUT_GUIDE_TIPS[id];words.append(title,tip);button.append(thumbnail,words);
+      button.addEventListener('click',()=>{guideSelect.value=id;document.getElementById('guide-visible').checked=true;updateGuide();refreshGuideLegend();menu.classList.remove('open');});legend.append(button);
+    }
+    refreshGuideLegend();
+    guideSelect.addEventListener('change',()=>{updateGuide();refreshGuideLegend();});
     document.getElementById('guide-turn').addEventListener('click',()=>{guideTurn=(guideTurn+1)%4;updateGuide();});
     document.getElementById('guide-mirror').addEventListener('change',e=>{guideMirror=e.target.checked;updateGuide();});
 
@@ -542,7 +567,7 @@
       document.getElementById('mini-meter').style.display = (mode === 'color') ? 'flex' : 'none';
       document.getElementById('ratio-hud').style.display  = (mode === 'ratios') ? 'flex' : 'none';
       document.getElementById('el-legend').style.display  = (mode === 'elzone') ? 'flex' : 'none';
-      menu.classList.remove('open');
+      if(mode==='composition')menu.classList.add('open');else menu.classList.remove('open');
     }
 
     document.querySelectorAll('.mode-tabs [data-mode]').forEach(btn => {
@@ -614,6 +639,7 @@
       }
     }
 
+    new MutationObserver(()=>handle.setAttribute('aria-expanded',String(menu.classList.contains('open')))).observe(menu,{attributes:true,attributeFilter:['class']});
     handle.addEventListener('click', () => {menu.classList.toggle('open');handle.setAttribute('aria-expanded',String(menu.classList.contains('open')));});
     document.getElementById('close-menu-btn').addEventListener('click', () => menu.classList.remove('open'));
 
@@ -793,6 +819,23 @@
       document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
       showNotice('Photo downloaded. On phones, use the image menu or share sheet to save it to Photos.');exitScreenshotMode();
     });
+
+    let lastViewTap=null,viewTapStart=null;
+    viewCanvas.addEventListener('pointerdown',e=>{
+      if(isScreenshotMode)return;
+      const now=performance.now();
+      if(lastViewTap && now-lastViewTap.time<360 && Math.hypot(e.clientX-lastViewTap.x,e.clientY-lastViewTap.y)<36){
+        ratioNodes=lastViewTap.nodes;ratioEdges=lastViewTap.edges;draggingNodeIndex=-1;updateRatioHudText();
+        menu.classList.add('open');lastViewTap=null;viewTapStart=null;e.preventDefault();e.stopImmediatePropagation();return;
+      }
+      viewTapStart={x:e.clientX,y:e.clientY,time:now,nodes:ratioNodes.map(n=>({...n})),edges:ratioEdges.map(edge=>({...edge}))};
+    },true);
+    window.addEventListener('pointerup',e=>{
+      if(viewTapStart && performance.now()-viewTapStart.time<300 && Math.hypot(e.clientX-viewTapStart.x,e.clientY-viewTapStart.y)<14){lastViewTap={...viewTapStart,time:performance.now()};}
+      else lastViewTap=null;
+      viewTapStart=null;
+    },true);
+    viewCanvas.addEventListener('dblclick',e=>{if(!isScreenshotMode){menu.classList.add('open');e.preventDefault();}});
 
     viewCanvas.addEventListener('pointerdown', e => {
       if (isScreenshotMode) {
@@ -1120,7 +1163,7 @@
           viewCtx.drawImage(rawCanvas, 0, 0);
         }
 
-        if (activeMode === 'composition') {
+        if (activeMode === 'composition' && document.getElementById('guide-visible').checked) {
           if(!isFrozen && frameCount % 8 === 0) {
             guideSample.width=80;guideSample.height=Math.max(32,Math.min(120,Math.round(80*rawCanvas.height/rawCanvas.width)));
             guideSampleCtx.drawImage(rawCanvas,0,0,guideSample.width,guideSample.height);
