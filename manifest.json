@@ -5,7 +5,7 @@
   "display": "fullscreen",
   "background_color": "#000000",
   "theme_color": "#000000",
-  "orientation": "portrait",
+  "orientation": "any",
   "icons": [
     {
       "src": "icon-192.png",
@@ -19,5 +19,9 @@
     }
   ],
   "id": "./",
-  "scope": "./"
+  "scope": "./",
+  "display_override": [
+    "fullscreen",
+    "standalone"
+  ]
 }

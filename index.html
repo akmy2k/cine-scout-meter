@@ -159,13 +159,27 @@
       letter-spacing: -0.3px; white-space: nowrap;
     }
 
-    /* Virtual Landscape Mode (90° Overlay Rotation) */
-    body.virtual-landscape #hud-bottom { bottom: auto; top: 50%; left: 38px; width: min(390px, 74vh); transform: translate(-50%, -50%) rotate(90deg); }
-    body.virtual-landscape #capture-btn { right: auto; left: 50%; top: auto; bottom: max(16px, env(safe-area-inset-bottom)); transform: translateX(-50%); }
-    body.virtual-landscape #ratio-hud { bottom: auto; top: 50%; left: 28px; transform: translate(-50%, -50%) rotate(90deg); }
-    body.virtual-landscape #el-legend { top: 16%; left: 50%; transform: translate(-50%, -50%) rotate(90deg); }
-    body.virtual-landscape #quick-rot-btn, body.virtual-landscape #lock-toggle-btn { transform: rotate(90deg); }
-
+    html, body { height: 100%; height: 100dvh; overscroll-behavior: none; }
+    #menu { touch-action: pan-y; padding-left:max(18px,env(safe-area-inset-left)); padding-right:max(18px,env(safe-area-inset-right)); padding-bottom:max(20px,env(safe-area-inset-bottom)); }
+    #menu:not(.open) { visibility:hidden; }
+    #menu.open { visibility:visible; }
+    #composition-controls { display:flex; flex-direction:column; gap:12px; }
+    #composition-controls[hidden], #color-controls[hidden] { display:none; }
+    #color-controls { display:flex;flex-direction:column;gap:11px; }
+    .control-help { font-size:12px; line-height:1.5; color:#aaa; max-width:65ch; }
+    #composition-guide { width:100%; min-height:44px; }
+    #app-notice { position:fixed; left:50%; bottom:max(80px,env(safe-area-inset-bottom)); transform:translateX(-50%); z-index:220; background:#181b1b; color:#edf3f1; border:1px solid #6a7872; border-radius:12px; padding:12px 16px; width:min(90vw,440px); font-size:13px; line-height:1.5; display:none; }
+    #quick-rot-btn { left:max(10px,env(safe-area-inset-left)); min-height:36px; }
+    #capture-btn { right:max(14px,env(safe-area-inset-right)); }
+    button:focus-visible, select:focus-visible { outline:2px solid #8ddfbe; outline-offset:3px; }
+    body.screenshot-mode #quick-rot-btn { display:none; }
+    @media (orientation:landscape) {
+      #hud-bottom { width:min(330px,55vw); }
+      #capture-btn { width:48px;height:48px; }
+      #capture-btn::after { width:34px;height:34px; }
+      #shot-bar { top:max(8px,env(safe-area-inset-top)); }
+    }
+    @media (prefers-reduced-motion:reduce) { *,*::after { transition:none!important; } }
     /* Top Pull-Down Handle */
     #menu-handle {
       position: fixed; top: env(safe-area-inset-top, 0px); left: 50%; transform: translateX(-50%);
@@ -241,7 +255,8 @@
 
   <div id="launch-gate">
     <div class="gate-title">Cine Scout Meter</div>
-    <div class="gate-sub">60-30-10 Color Balance • Lighting Ratios • EL Zone Exposure</div>
+    <div class="gate-sub">Colour • Light • Composition</div>
+    <p class="gate-sub">For a view without browser tabs: Safari → Share → Add to Home Screen. Open from that icon and rotate your phone.</p>
     <button id="start-app-btn">Start Viewfinder</button>
   </div>
 
@@ -259,31 +274,45 @@
     <button id="resume-btn">✕ Resume</button>
   </div>
 
-  <button id="quick-rot-btn" title="Rotate Overlays 90°">🔄 90°</button>
-  <button id="lock-toggle-btn" title="Lock/Unlock Auto-Tilt">🔓 Unlocked</button>
+  <button id="quick-rot-btn" title="Enter full screen" aria-label="Enter full screen">⛶ Full screen</button>
+  <div id="app-notice" role="status" aria-live="polite"></div>
 
   <div id="ratio-hud">
     <span id="ratio-status">Tap 2 spots for Ratio 1</span>
     <button id="ratio-clear-inline">Clear</button>
   </div>
 
-  <div id="capture-btn" title="Freeze & Save Snapshot"></div>
-  <div id="menu-handle" title="Swipe down or tap for menu"></div>
+  <button id="capture-btn" title="Freeze and save frame" aria-label="Capture frame"></button>
+  <button id="menu-handle" title="Open controls" aria-label="Open controls" aria-expanded="false"></button>
 
   <div id="menu">
     <div class="drawer-section-title">Active Feature (One at a Time)</div>
-    <div class="mode-tabs">
+    <div class="mode-tabs" style="grid-template-columns:repeat(2,1fr)">
       <button class="mode-tab active" data-mode="color">1. COLOR (60-30-10)</button>
       <button class="mode-tab" data-mode="ratios">2. RATIOS (3x)</button>
       <button class="mode-tab" data-mode="elzone">3. EL ZONE</button>
+      <button class="mode-tab" data-mode="composition">4. COMPOSITION</button>
     </div>
 
-    <div class="drawer-section-title">Viewfinder Overlay Orientation</div>
+    <div class="drawer-section-title">Screen orientation</div>
     <div class="mode-tabs" style="grid-template-columns: repeat(2, 1fr);">
-      <button class="mode-tab active" id="layout-vert-btn">📱 Vertical (0°)</button>
-      <button class="mode-tab" id="layout-land-btn">🎬 Horizontal (90°)</button>
+      <button class="mode-tab active" id="layout-vert-btn">Auto rotate</button>
+      <button class="mode-tab" id="layout-land-btn">Landscape full screen</button>
     </div>
 
+    <section id="composition-controls" hidden>
+      <div class="drawer-section-title">Composition guide</div>
+      <label for="composition-guide">Guide</label>
+      <select id="composition-guide" class="ui-select"></select>
+      <div class="menu-row">
+        <button class="ui-btn" id="guide-turn">Rotate guide 90°</button>
+        <label><input type="checkbox" id="guide-mirror"> Mirror</label>
+      </div>
+      <div class="menu-row"><label for="guide-glow">Alignment glow</label><input type="checkbox" id="guide-glow" checked></div>
+      <div class="menu-row"><label for="save-guide">Include guide in saved photo</label><input type="checkbox" id="save-guide" checked></div>
+      <p class="control-help">Lines or focal marks glow green when nearby edges or contrast align. A visual hint, not a composition verdict. Rotate or mirror the guide to fit the scene.</p>
+    </section>
+    <section id="color-controls">
     <div class="drawer-section-title">Color Palette & Harmony Details</div>
     <label for="color-grouping">Colour grouping</label>
     <select id="color-grouping" style="background:#222;color:#fff;padding:8px;border:1px solid #666;border-radius:6px">
@@ -320,6 +349,7 @@
       </div>
     </div>
 
+    </section>
     <div class="drawer-section-title">Controls & Source</div>
 
     <div class="menu-row">
@@ -391,6 +421,7 @@
   </div>
 
   <script src="color-grouping.js"></script>
+  <script src="composition.js"></script>
   <script>
     const video = document.getElementById('video');
     const viewCanvas = document.getElementById('view-canvas');
@@ -432,61 +463,59 @@
     let draggingNodeIndex = -1;
     const LINE_COLORS = ['#38bdf8', '#f472b6', '#fde047'];
 
-    const lockBtn = document.getElementById('lock-toggle-btn');
-    lockBtn.addEventListener('click', e => {
-      e.stopPropagation();
-      isRotationLocked = !isRotationLocked;
-      autoTiltEnabled = !isRotationLocked;
-      lockBtn.innerText = isRotationLocked ? '🔒 Locked' : '🔓 Unlocked';
-      lockBtn.style.borderColor = isRotationLocked ? '#38bdf8' : 'rgba(255,255,255,0.3)';
-    });
-
-    document.getElementById('start-app-btn').addEventListener('click', async () => {
-      launchGate.style.display = 'none';
-      await startCamera();
-      if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-        DeviceOrientationEvent.requestPermission().then(response => {
-          if (response === 'granted') attachTiltListener();
-        }).catch(() => {});
-      } else {
-        attachTiltListener();
-      }
-    });
-
-    function attachTiltListener() {
-      window.addEventListener('deviceorientation', e => {
-        if (!autoTiltEnabled || isScreenshotMode) return;
-        const gamma = e.gamma;
-        if (gamma === null) return;
-        if (gamma > 45 && !isVirtualLandscape) {
-          setVirtualLandscape(true);
-        } else if (gamma < -45 && isVirtualLandscape) {
-          setVirtualLandscape(false);
-        } else if (Math.abs(gamma) < 15 && isVirtualLandscape) {
-          setVirtualLandscape(false);
+    function showNotice(message) {
+      const el=document.getElementById('app-notice'); el.textContent=message;el.style.display='block';
+      clearTimeout(showNotice.timer);showNotice.timer=setTimeout(()=>el.style.display='none',6500);
+    }
+    function isAppWindow() { return window.matchMedia('(display-mode: standalone)').matches || window.matchMedia('(display-mode: fullscreen)').matches || navigator.standalone === true; }
+    async function enterImmersive(landscape=false) {
+      const root=document.documentElement;
+      try {
+        if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+          if (root.requestFullscreen) await root.requestFullscreen({navigationUI:'hide'});
+          else if (root.webkitRequestFullscreen) await root.webkitRequestFullscreen();
+          else if (!isAppWindow()) showNotice('Safari keeps its tabs in a browser window. Use Share → Add to Home Screen, open that icon, then rotate your phone.');
         }
-      }, { passive: true });
+      } catch { if(!isAppWindow()) showNotice('Full screen is unavailable here. Open from the Home Screen icon for a view without browser tabs.'); }
+      if(landscape) {
+        try { if(!screen.orientation?.lock) throw new Error(); await screen.orientation.lock('landscape'); }
+        catch { showNotice('Rotate your phone sideways. If it stays upright, turn off the phone’s portrait orientation lock. For no tabs, open the Home Screen icon.'); }
+      }
+      syncCanvasDimensions();
     }
-
-    function setVirtualLandscape(val) {
-      isVirtualLandscape = val;
-      document.body.classList.toggle('virtual-landscape', val);
-      document.getElementById('layout-vert-btn').classList.toggle('active', !val);
-      document.getElementById('layout-land-btn').classList.toggle('active', val);
+    function syncFullscreenButton(){
+      const full=!!(document.fullscreenElement||document.webkitFullscreenElement);
+      const btn=document.getElementById('quick-rot-btn');btn.textContent=full?'⛶ Exit full screen':'⛶ Full screen';btn.setAttribute('aria-label',full?'Exit full screen':'Enter full screen');
+      syncCanvasDimensions();
     }
+    document.addEventListener('fullscreenchange',syncFullscreenButton);
+    document.addEventListener('webkitfullscreenchange',syncFullscreenButton);
+    document.getElementById('quick-rot-btn').addEventListener('click',async()=>{
+      if(document.fullscreenElement) await document.exitFullscreen();
+      else if(document.webkitFullscreenElement) document.webkitExitFullscreen();
+      else await enterImmersive(window.innerWidth>window.innerHeight);
+    });
+    document.getElementById('start-app-btn').addEventListener('click',async()=>{
+      // Invoke fullscreen while this tap still carries browser user activation.
+      const immersion=enterImmersive(false);
+      launchGate.style.display='none';
+      await startCamera();await immersion;
+    });
+    document.getElementById('layout-vert-btn').addEventListener('click',()=>{
+      try {screen.orientation?.unlock?.();}catch{}
+      menu.classList.remove('open');showNotice('Auto rotate: turn the phone to change orientation.');
+    });
+    document.getElementById('layout-land-btn').addEventListener('click',()=>{menu.classList.remove('open');enterImmersive(true);});
 
-    document.getElementById('quick-rot-btn').addEventListener('click', e => {
-      e.stopPropagation();
-      setVirtualLandscape(!isVirtualLandscape);
-    });
-    document.getElementById('layout-vert-btn').addEventListener('click', () => {
-      setVirtualLandscape(false);
-      menu.classList.remove('open');
-    });
-    document.getElementById('layout-land-btn').addEventListener('click', () => {
-      setVirtualLandscape(true);
-      menu.classList.remove('open');
-    });
+    const guideSelect=document.getElementById('composition-guide');
+    for(const [id,label] of Object.entries(SCOUT_GUIDES)){const option=document.createElement('option');option.value=id;option.textContent=label;guideSelect.append(option);}
+    let guideTurn=0,guideMirror=false,guideGeometry=scoutGuideGeometry('thirds');
+    let guideAlignment={paths:[],focus:0,score:0};
+    const guideSample=document.createElement('canvas'), guideSampleCtx=guideSample.getContext('2d',{willReadFrequently:true});
+    function updateGuide(){guideGeometry=scoutGuideGeometry(guideSelect.value,guideTurn,guideMirror,window.innerWidth/window.innerHeight);guideAlignment={paths:[],focus:0,score:0};}
+    guideSelect.addEventListener('change',updateGuide);
+    document.getElementById('guide-turn').addEventListener('click',()=>{guideTurn=(guideTurn+1)%4;updateGuide();});
+    document.getElementById('guide-mirror').addEventListener('change',e=>{guideMirror=e.target.checked;updateGuide();});
 
     document.getElementById('force-reload-btn').addEventListener('click', async () => {
       if ('serviceWorker' in navigator) {
@@ -501,7 +530,11 @@
     });
 
     function setMode(mode) {
+      if (isScreenshotMode) exitScreenshotMode();
       activeMode = mode;
+      document.getElementById('composition-controls').hidden = mode !== 'composition';
+      document.getElementById('color-controls').hidden = mode !== 'color';
+      document.getElementById('grid').style.display = mode !== 'composition' && document.getElementById('grid-toggle').checked ? 'block' : 'none';
       document.querySelectorAll('.mode-tabs [data-mode]').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.mode === mode);
       });
@@ -550,17 +583,20 @@
 
     let lastW = 0, lastH = 0;
     function syncCanvasDimensions() {
-      const w = document.documentElement.clientWidth || window.innerWidth;
-      const h = document.documentElement.clientHeight || window.innerHeight;
-      if (Math.abs(w - lastW) > 40 || Math.abs(h - lastH) > 40) {
+      const w = window.innerWidth || document.documentElement.clientWidth;
+      const h = window.innerHeight || document.documentElement.clientHeight;
+      if (w !== lastW || h !== lastH) {
+        const preserved=document.createElement("canvas");preserved.width=rawCanvas.width;preserved.height=rawCanvas.height;if(isFrozen)preserved.getContext("2d").drawImage(rawCanvas,0,0);
         lastW = w; lastH = h;
         viewCanvas.width = w;
         viewCanvas.height = h;
         rawCanvas.width = w;
         rawCanvas.height = h;
+        if(isFrozen && preserved.width && preserved.height)rawCtx.drawImage(preserved,0,0,w,h);
       }
     }
-    window.addEventListener('resize', syncCanvasDimensions);
+    window.addEventListener('resize',()=>{syncCanvasDimensions();updateGuide();});
+    window.visualViewport?.addEventListener('resize',syncCanvasDimensions);
     syncCanvasDimensions();
 
     async function startCamera() {
@@ -577,7 +613,7 @@
       }
     }
 
-    handle.addEventListener('click', () => menu.classList.toggle('open'));
+    handle.addEventListener('click', () => {menu.classList.toggle('open');handle.setAttribute('aria-expanded',String(menu.classList.contains('open')));});
     document.getElementById('close-menu-btn').addEventListener('click', () => menu.classList.remove('open'));
 
     let touchStartY = 0;
@@ -632,7 +668,7 @@
       updateRatioHudText();
     });
     document.getElementById('grid-toggle').addEventListener('change', e => {
-      document.getElementById('grid').style.display = e.target.checked ? 'block' : 'none';
+      document.getElementById('grid').style.display = e.target.checked && activeMode !== 'composition' ? 'block' : 'none';
     });
     document.getElementById('freeze-toggle').addEventListener('change', e => {
       isFrozen = e.target.checked;
@@ -651,7 +687,10 @@
     const flashEl = document.getElementById('flash-overlay');
     const shotBar = document.getElementById('shot-bar');
 
+    let preparedPhoto=null;
+    let captureGeneration=0;
     function enterScreenshotMode() {
+      menu.classList.remove('open');
       isScreenshotMode = true;
       isFrozen = true;
       document.body.classList.add('screenshot-mode');
@@ -659,10 +698,12 @@
       flashEl.style.opacity = '0.85';
       setTimeout(() => { flashEl.style.opacity = '0'; }, 180);
       shotBar.style.display = 'flex';
+      prepareSnapshot();
     }
 
     function exitScreenshotMode() {
       isScreenshotMode = false;
+      captureGeneration++;preparedPhoto=null;
       isFrozen = document.getElementById('freeze-toggle').checked;
       document.body.classList.remove('screenshot-mode');
       shotBar.style.display = 'none';
@@ -678,14 +719,16 @@
       exitScreenshotMode();
     });
 
-    document.getElementById('save-photos-btn').addEventListener('click', async e => {
-      e.stopPropagation();
+    function prepareSnapshot() {
+      const generation=++captureGeneration;
+      preparedPhoto=null;
+      const saveBtn=document.getElementById('save-photos-btn');saveBtn.disabled=true;saveBtn.textContent='Preparing…';
       const snapCanvas = document.createElement('canvas');
       const ctx = snapCanvas.getContext('2d');
       snapCanvas.width = viewCanvas.width;
       snapCanvas.height = viewCanvas.height;
 
-      ctx.drawImage(viewCanvas, 0, 0);
+      ctx.drawImage(activeMode === 'composition' && !document.getElementById('save-guide').checked ? rawCanvas : viewCanvas, 0, 0);
 
       if (activeMode === 'color') {
         const pad = 14;
@@ -726,21 +769,28 @@
         ctx.fillText(`~${currentScore}%`, xLeft + boxW - 10, yTop + 42);
       }
 
-      snapCanvas.toBlob(async blob => {
-        const file = new File([blob], `cine-scout-${Date.now()}.png`, { type: 'image/png' });
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          try {
-            await navigator.share({ files: [file] });
-            exitScreenshotMode();
-            return;
-          } catch (err) {}
+      snapCanvas.toBlob(blob=>{
+        if(generation!==captureGeneration)return;
+        if(!blob){saveBtn.textContent='Try capture again';showNotice('Could not prepare the photo. Resume and try again.');return;}
+        preparedPhoto=new File([blob],`cine-scout-${Date.now()}.png`,{type:'image/png'});
+        saveBtn.disabled=false;saveBtn.textContent='Save / Share photo';
+      },'image/png');
+    }
+    document.getElementById('save-photos-btn').addEventListener('click',async e=>{
+      e.stopPropagation();if(!preparedPhoto)return;
+      const file=preparedPhoto;
+      try {
+        if(navigator.canShare?.({files:[file]})) {
+          // Native share invoked directly inside the tap, not in a toBlob callback.
+          await navigator.share({files:[file],title:'Cine Scout frame'});exitScreenshotMode();return;
         }
-        const link = document.createElement('a');
-        link.download = file.name;
-        link.href = URL.createObjectURL(blob);
-        link.click();
-        exitScreenshotMode();
-      }, 'image/png');
+      } catch(err) {
+        if(err.name==='AbortError')return;
+        showNotice('Sharing is unavailable. Downloading the photo instead.');
+      }
+      const url=URL.createObjectURL(file),link=document.createElement('a');link.href=url;link.download=file.name;
+      document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
+      showNotice('Photo downloaded. On phones, use the image menu or share sheet to save it to Photos.');exitScreenshotMode();
     });
 
     viewCanvas.addEventListener('pointerdown', e => {
@@ -1083,6 +1133,18 @@
           viewCtx.drawImage(rawCanvas, 0, 0);
         }
 
+        if (activeMode === 'composition') {
+          if(!isFrozen && frameCount % 8 === 0) {
+            guideSample.width=80;guideSample.height=Math.max(32,Math.min(120,Math.round(80*rawCanvas.height/rawCanvas.width)));
+            guideSampleCtx.drawImage(rawCanvas,0,0,guideSample.width,guideSample.height);
+            const evidence=scoutFrameEvidence(guideSampleCtx.getImageData(0,0,guideSample.width,guideSample.height).data,guideSample.width,guideSample.height);
+            const next=scoutGuideAlignment(guideGeometry,evidence),alpha=.3;
+            guideAlignment.paths=next.paths.map((v,i)=>(guideAlignment.paths[i]||0)*(1-alpha)+v*alpha);
+            guideAlignment.focus=guideAlignment.focus*(1-alpha)+next.focus*alpha;
+            guideAlignment.focusPoint=next.focusPoint;
+          }
+          scoutDrawGuide(viewCtx,viewCanvas.width,viewCanvas.height,guideGeometry,guideAlignment,document.getElementById('guide-glow').checked);
+        }
         if (activeMode === 'ratios') {
           drawMultiRatiosOverlay(viewCtx, viewCanvas.width, viewCanvas.height);
         }
