@@ -1,4 +1,4 @@
-# Cine Scout Meter
+# CineLit Meter
 
 https://akmy2k.github.io/cine-scout-meter/
 
@@ -37,3 +37,5 @@ Checks: `node tests/composition.test.cjs` and `node tests/camera-sound.test.cjs`
 ## Reference photo overlay
 
 Controls → Reference photo overlay → Load reference photo. A separate image overlays the current camera/source at 40% opacity, contained to preserve its proportions. Adjust 0–100% using the inline Reference slider on the camera view, or the menu slider; Reference toggles it off/on and Remove clears it. The reference is kept only in this tab's memory, never uploaded. Camera measurements and composition analysis still use the underlying camera/source. Visible references are included in captured frames; composition guides remain separately selectable for capture. The reference control is hidden in menus, Sound and capture UI.
+
+Tap the small i above the colour bar to open or close palette names, percentages, harmony details and colour grouping without opening Controls.

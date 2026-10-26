@@ -61,7 +61,7 @@ class ScoutSoundMeter {
       recorder.ondataavailable=event=>{if(event.data?.size)chunks.push(event.data);};
       recorder.onstop=()=>{
         clearTimeout(this.recordTimer);
-        if(chunks.length){const mime=recorder.mimeType||chunks[0].type||'application/octet-stream';this.recordedFile=new File([new Blob(chunks,{type:mime})],`cine-scout-room-tone-${Date.now()}.${scoutAudioExtension(mime)}`,{type:mime});this.saveButton.disabled=false;this.status.textContent='Recording ready · Save audio';}
+        if(chunks.length){const mime=recorder.mimeType||chunks[0].type||'application/octet-stream';this.recordedFile=new File([new Blob(chunks,{type:mime})],`cinelit-room-tone-${Date.now()}.${scoutAudioExtension(mime)}`,{type:mime});this.saveButton.disabled=false;this.status.textContent='Recording ready · Save audio';}
         else this.status.textContent='No audio captured. Try recording again.';
         this.recordButton.dataset.recording='false';this.recordButton.textContent='Record';this.recordButton.disabled=!this.stream;
       };
@@ -74,7 +74,7 @@ class ScoutSoundMeter {
   async saveRecording(){
     if(!this.recordedFile)return;
     const file=this.recordedFile;
-    try{if(navigator.canShare?.({files:[file]})){await navigator.share({files:[file],title:'Cine Scout room tone'});return;}}
+    try{if(navigator.canShare?.({files:[file]})){await navigator.share({files:[file],title:'CineLit Meter room tone'});return;}}
     catch(error){if(error.name==='AbortError')return;}
     const url=URL.createObjectURL(file),link=document.createElement('a');link.href=url;link.download=file.name;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
   }

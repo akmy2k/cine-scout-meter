@@ -8,9 +8,9 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="mobile-web-app-capable" content="yes">
   <link rel="manifest" href="manifest.json">
-  <title>Cine Scout Meter</title>
+  <title>CineLit Meter</title>
   <link rel="apple-touch-icon" href="icon-192.png">
-  <meta name="apple-mobile-web-app-title" content="Cine Scout">
+  <meta name="apple-mobile-web-app-title" content="CineLit Meter">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace; }
     html, body {
@@ -321,7 +321,7 @@
 <body>
 
   <div id="launch-gate">
-    <div class="gate-title">Cine Scout Meter</div>
+    <div class="gate-title">CineLit Meter</div>
     <div class="gate-sub">Colour • Light • Composition</div>
     <p class="gate-sub">For a view without browser tabs: Safari → Share → Add to Home Screen. Open from that icon and rotate your phone.</p>
     <button id="start-app-btn">Start Viewfinder</button>
@@ -526,10 +526,10 @@
     </div>
   </div>
 
-  <script src="color-grouping.js?v=16"></script>
-  <script src="composition.js?v=16"></script>
-  <script src="ratio-labels.js?v=16"></script>
-  <script src="camera-sound.js?v=16"></script>
+  <script src="color-grouping.js?v=17"></script>
+  <script src="composition.js?v=17"></script>
+  <script src="ratio-labels.js?v=17"></script>
+  <script src="camera-sound.js?v=17"></script>
   <script>
     const video = document.getElementById('video');
     const viewCanvas = document.getElementById('view-canvas');
@@ -1008,7 +1008,7 @@
       try {
         if(navigator.canShare?.({files:[file]})) {
           // Native share invoked directly inside the tap, not in a toBlob callback.
-          await navigator.share({files:[file],title:'Cine Scout frame'});exitScreenshotMode();return;
+          await navigator.share({files:[file],title:'CineLit Meter frame'});exitScreenshotMode();return;
         }
       } catch(err) {
         if(err.name==='AbortError')return;

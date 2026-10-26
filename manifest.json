@@ -1,6 +1,6 @@
 {
-  "name": "Cine Scout Meter",
-  "short_name": "CineMeter",
+  "name": "CineLit Meter",
+  "short_name": "CineLit Meter",
   "start_url": "./",
   "display": "fullscreen",
   "background_color": "#000000",
