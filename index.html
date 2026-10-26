@@ -312,6 +312,10 @@
     #sound-target{width:min(100%,320px);accent-color:#e3c083;} #sound-settings{display:flex;flex-direction:column;gap:9px;} #sound-settings[hidden]{display:none;}
     #reference-quick,body.has-camera-zoom #reference-quick {top:calc(env(safe-area-inset-top,0px) + 100px);}
     @media(orientation:landscape){#exposure-tools,#zoom-tools{width:min(155px,calc((100vw - 144px)/2));}}
+    #color-info-toggle {align-self:center;width:36px;height:36px;border:1px solid #8caaa0;border-radius:50%;background:#12201ee6;color:#e5f6ee;font:italic 700 18px Georgia,serif;cursor:pointer;}
+    #color-info-toggle[aria-expanded="true"]{background:#315849;}
+    #hud-bottom > #color-controls {pointer-events:auto;position:absolute;bottom:calc(100% + 8px);left:0;right:0;max-height:48dvh;overflow:auto;padding:14px;background:rgba(12,21,23,.96);border:1px solid #52665e;border-radius:12px;box-sizing:border-box;}
+    body.menu-open #hud-bottom > #color-controls,body.menu-open #color-info-toggle,body.screenshot-mode #color-info-toggle,body.screenshot-mode #hud-bottom > #color-controls {display:none;}
   </style>
 </head>
 <body>
@@ -397,44 +401,7 @@
       <div class="menu-row"><label for="save-guide">Include guide in saved photo</label><input type="checkbox" id="save-guide" checked></div>
       <p class="control-help">Lines or focal marks glow green when nearby edges or contrast align. A visual hint, not a composition verdict. Rotate or mirror the guide to fit the scene.</p>
     </section>
-    <section id="color-controls">
-    <div class="drawer-section-title">Color Palette & Harmony Details</div>
-    <label for="color-grouping">Colour grouping</label>
-    <select id="color-grouping" style="background:#222;color:#fff;padding:8px;border:1px solid #666;border-radius:6px">
-      <option value="5">Fine — more shade detail</option>
-      <option value="9">Balanced</option>
-      <option value="14" selected>Broad — combine similar shades</option>
-      <option value="20">Very broad — fewer colour groups</option>
-    </select>
-    <div style="font-size:11px;color:#aaa;margin:6px 0 12px">Broader grouping ignores small lighting and shade differences. Shows up to three main colour families.</div>
-    <div class="harmony-box">
-      <div>
-        <div style="font-size:15px; font-weight:800;" id="harmony-type">Analyzing...</div>
-        <div style="font-size:11px; color:#ccc;" id="harmony-desc">Guesstimate damped (~5% steps)</div>
-        <div style="font-size:11px; color:#38bdf8; margin-top:3px;" id="drawer-score">60-30-10 Match: --%</div>
-      </div>
-      <canvas id="wheel-canvas" width="92" height="92"></canvas>
-    </div>
 
-    <div class="palette-cards">
-      <div class="p-card">
-        <div class="p-head"><div class="p-swatch" id="sw-0"></div><span id="pct-0">60%</span></div>
-        <div class="p-name" id="name-0">Primary</div>
-        <div class="p-hex" id="hex-0">#000000</div>
-      </div>
-      <div class="p-card">
-        <div class="p-head"><div class="p-swatch" id="sw-1"></div><span id="pct-1">30%</span></div>
-        <div class="p-name" id="name-1">Secondary</div>
-        <div class="p-hex" id="hex-1">#000000</div>
-      </div>
-      <div class="p-card">
-        <div class="p-head"><div class="p-swatch" id="sw-2"></div><span id="pct-2">10%</span></div>
-        <div class="p-name" id="name-2">Accent</div>
-        <div class="p-hex" id="hex-2">#000000</div>
-      </div>
-    </div>
-
-    </section>
     <section id="sound-settings" hidden>
       <label for="sound-target">Quiet-pause target <output id="sound-target-value">−60 dBFS</output></label>
       <input type="range" id="sound-target" min="-80" max="-20" step="1" value="-60" aria-label="Room tone recording target">
@@ -494,7 +461,46 @@
     <div id="composition-shapes" role="group" aria-label="Composition shapes"></div>
   </div>
   <div id="hud-bottom">
+    <section id="color-controls" hidden role="region" aria-label="Colour palette details">
+    <div class="drawer-section-title">Color Palette & Harmony Details</div>
+    <label for="color-grouping">Colour grouping</label>
+    <select id="color-grouping" style="background:#222;color:#fff;padding:8px;border:1px solid #666;border-radius:6px">
+      <option value="5">Fine — more shade detail</option>
+      <option value="9">Balanced</option>
+      <option value="14" selected>Broad — combine similar shades</option>
+      <option value="20">Very broad — fewer colour groups</option>
+    </select>
+    <div style="font-size:11px;color:#aaa;margin:6px 0 12px">Broader grouping ignores small lighting and shade differences. Shows up to three main colour families.</div>
+    <div class="harmony-box">
+      <div>
+        <div style="font-size:15px; font-weight:800;" id="harmony-type">Analyzing...</div>
+        <div style="font-size:11px; color:#ccc;" id="harmony-desc">Guesstimate damped (~5% steps)</div>
+        <div style="font-size:11px; color:#38bdf8; margin-top:3px;" id="drawer-score">60-30-10 Match: --%</div>
+      </div>
+      <canvas id="wheel-canvas" width="92" height="92"></canvas>
+    </div>
+
+    <div class="palette-cards">
+      <div class="p-card">
+        <div class="p-head"><div class="p-swatch" id="sw-0"></div><span id="pct-0">60%</span></div>
+        <div class="p-name" id="name-0">Primary</div>
+        <div class="p-hex" id="hex-0">#000000</div>
+      </div>
+      <div class="p-card">
+        <div class="p-head"><div class="p-swatch" id="sw-1"></div><span id="pct-1">30%</span></div>
+        <div class="p-name" id="name-1">Secondary</div>
+        <div class="p-hex" id="hex-1">#000000</div>
+      </div>
+      <div class="p-card">
+        <div class="p-head"><div class="p-swatch" id="sw-2"></div><span id="pct-2">10%</span></div>
+        <div class="p-name" id="name-2">Accent</div>
+        <div class="p-hex" id="hex-2">#000000</div>
+      </div>
+    </div>
+
+    </section>
     <div id="mini-meter">
+      <button id="color-info-toggle" type="button" aria-label="Colour palette information" aria-controls="color-controls" aria-expanded="false" title="Show or hide colour labels">i</button>
       <div class="live-bar">
         <div class="bar-seg" id="bseg-0" style="width:60%;"></div>
         <div class="bar-seg" id="bseg-1" style="width:30%;"></div>
@@ -520,10 +526,10 @@
     </div>
   </div>
 
-  <script src="color-grouping.js?v=15"></script>
-  <script src="composition.js?v=15"></script>
-  <script src="ratio-labels.js?v=15"></script>
-  <script src="camera-sound.js?v=15"></script>
+  <script src="color-grouping.js?v=16"></script>
+  <script src="composition.js?v=16"></script>
+  <script src="ratio-labels.js?v=16"></script>
+  <script src="camera-sound.js?v=16"></script>
   <script>
     const video = document.getElementById('video');
     const viewCanvas = document.getElementById('view-canvas');
@@ -664,6 +670,8 @@
       window.location.reload(true);
     });
 
+    document.getElementById('color-info-toggle').addEventListener('click',()=>{const panel=document.getElementById('color-controls'),button=document.getElementById('color-info-toggle');panel.hidden=!panel.hidden;button.setAttribute('aria-expanded',String(!panel.hidden));});
+
     function setMode(mode) {
       if (isScreenshotMode) exitScreenshotMode();
       if(mode!=='sound')soundMeter.stop();
@@ -673,7 +681,7 @@
       activeMode = mode;
       document.getElementById('composition-tray').hidden=mode!=='composition';
       document.getElementById('composition-controls').hidden = mode !== 'composition';
-      document.getElementById('color-controls').hidden = mode !== 'color';
+      document.getElementById('color-controls').hidden = true;document.getElementById('color-info-toggle').setAttribute('aria-expanded','false');
       document.getElementById('grid').style.display = mode !== 'composition' && document.getElementById('grid-toggle').checked ? 'block' : 'none';
       document.querySelectorAll('.mode-tabs [data-mode]').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.mode === mode);
