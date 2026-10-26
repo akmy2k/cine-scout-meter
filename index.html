@@ -270,6 +270,24 @@
     .shape-choice[aria-pressed="true"] { border-color:#a4f3cf;background:#274537; }
     .shape-choice canvas { width:68px;height:40px; }
     @media(orientation:landscape) and (max-height:500px) { .shape-choice { min-height:62px; }.shape-choice canvas{height:30px;width:52px;} #composition-tray{bottom:max(6px,env(safe-area-inset-bottom));gap:3px;} }
+    :root { --safe-left:env(safe-area-inset-left,0px);--safe-right:env(safe-area-inset-right,0px);--safe-bottom:env(safe-area-inset-bottom,0px); }
+    #el-legend { left:auto;right:max(12px,env(safe-area-inset-right));top:calc(50% + 25px);transform:translateY(-50%);max-height:calc(100dvh - 150px);padding:6px;gap:1px; }
+    #el-legend .el-row { font-size:11px;line-height:1.1;gap:4px; }
+    #el-legend .el-swatch { width:11px;height:10px; }
+    body.mode-elzone #capture-btn { top:auto;bottom:max(14px,env(safe-area-inset-bottom));transform:none; }
+    #camera-tools { position:fixed;top:calc(env(safe-area-inset-top,0px) + 60px);left:max(10px,env(safe-area-inset-left));right:max(10px,env(safe-area-inset-right));z-index:10;display:flex;align-items:center;gap:7px;padding:5px 8px;border:1px solid #4e6264;border-radius:9px;background:rgba(12,21,23,.92);color:#dfebe8;font-size:11px; }
+    #exposure-slider { flex:1;min-width:50px;max-width:240px;height:30px;accent-color:#a4efcb; }
+    #exposure-value { min-width:29px; }
+    #camera-choice { min-width:70px;max-width:36%;margin-left:auto;min-height:32px;background:#1d2c2c;color:#e7efec;border:1px solid #637a74;border-radius:5px;font-size:11px; }
+    #zoom-tools { display:flex;align-items:center;gap:3px; } #zoom-tools[hidden] { display:none; } #camera-zoom{width:70px;}
+    body.menu-open #camera-tools,body.screenshot-mode #camera-tools {display:none;}
+    #sound-overlay { position:fixed;inset:0;z-index:9;background:#0c1419; } #sound-overlay[hidden]{display:none;}
+    #sound-canvas {width:100%;height:100%;}
+    #sound-controls { position:absolute;top:calc(env(safe-area-inset-top,0px) + 112px);left:max(14px,env(safe-area-inset-left));display:flex;align-items:center;gap:10px;right:14px;font-size:11px;color:#c3d2d7; }
+    #sound-start {min-height:36px;}
+    body.has-camera-zoom #sound-controls {top:calc(env(safe-area-inset-top,0px) + 148px);}
+    body.mode-sound #capture-btn {display:none;}
+    @media(max-width:480px) { #camera-tools {flex-wrap:wrap;gap:5px;} #camera-choice{max-width:35%;} #zoom-tools {width:100%;justify-content:flex-end;} #zoom-tools input{width:100px;} }
   </style>
 </head>
 <body>
@@ -286,6 +304,15 @@
   <input type="file" id="file-input" accept="image/*">
 
   <canvas id="view-canvas"></canvas>
+  <div id="camera-tools">
+    <label for="exposure-slider" id="exposure-label">Preview EV</label><input id="exposure-slider" type="range" min="-2" max="2" step="0.1" value="0" aria-label="Exposure compensation"><output id="exposure-value">0.0</output>
+    <select id="camera-choice" aria-label="Available cameras"><option value="">Camera</option></select>
+    <label id="zoom-tools" hidden>Zoom <input type="range" id="camera-zoom" aria-label="Camera zoom"><output id="zoom-value">1×</output></label>
+  </div>
+  <section id="sound-overlay" hidden aria-label="Sound level graph">
+    <canvas id="sound-canvas" aria-label="Relative microphone level history"></canvas>
+    <div id="sound-controls"><button class="ui-btn" id="sound-start">Enable microphone</button><span id="sound-status" role="status">Microphone off · no recording</span></div>
+  </section>
   <div id="grid"></div>
   <div id="el-legend"></div>
   <div id="flash-overlay"></div>
@@ -314,6 +341,7 @@
       <button class="mode-tab" data-mode="ratios">2. RATIOS (3x)</button>
       <button class="mode-tab" data-mode="elzone">3. EL ZONE</button>
       <button class="mode-tab" data-mode="composition">4. COMPOSITION</button>
+      <button class="mode-tab" data-mode="sound">5. SOUND</button>
     </div>
 
     <div class="drawer-section-title">Screen orientation</div>
@@ -329,6 +357,8 @@
       <p id="guide-instruction" class="control-help"></p>
       <div class="menu-row"><label for="guide-visible">Show composition overlay</label><input type="checkbox" id="guide-visible" checked></div>
       <div class="menu-row"><label for="guide-glow">Alignment glow</label><input type="checkbox" id="guide-glow" checked></div>
+      <label class="control-help" for="guide-threshold">Alignment tolerance</label>
+      <select class="ui-select" id="guide-threshold"><option value="0.48" selected>Forgiving</option><option value="0.62">Balanced</option><option value="0.75">Precise</option></select>
       <div id="composition-legend" role="group" aria-label="Choose a composition to replicate"></div>
       <div class="menu-row">
         <button class="ui-btn" id="guide-turn">Rotate guide 90°</button>
@@ -449,9 +479,10 @@
     </div>
   </div>
 
-  <script src="color-grouping.js?v=10"></script>
-  <script src="composition.js?v=10"></script>
-  <script src="ratio-labels.js?v=10"></script>
+  <script src="color-grouping.js?v=11"></script>
+  <script src="composition.js?v=11"></script>
+  <script src="ratio-labels.js?v=11"></script>
+  <script src="camera-sound.js?v=11"></script>
   <script>
     const video = document.getElementById('video');
     const viewCanvas = document.getElementById('view-canvas');
@@ -468,6 +499,12 @@
     let autoTiltEnabled = true;
     let isRotationLocked = false;
     let facingMode = 'environment';
+    let cameraGeneration=0;
+    let selectedCamera='',cameraTrack=null,hardwareExposure=false,previewEV=0,previewLut=scoutExposureLut(0),exposureTimer;
+    const exposureSlider=document.getElementById('exposure-slider'),cameraChoice=document.getElementById('camera-choice');
+    const soundMeter=new ScoutSoundMeter(document.getElementById('sound-canvas'),document.getElementById('sound-start'),document.getElementById('sound-status'));
+    window.addEventListener('resize',()=>{if(activeMode==='sound')soundMeter.draw();});
+
     let isFrozen = false;
     let isScreenshotMode = false;
     let uploadedImg = null;
@@ -539,7 +576,7 @@
 
     const guideSelect=document.getElementById('composition-guide');
     for(const [id,label] of Object.entries(SCOUT_GUIDES)){const option=document.createElement('option');option.value=id;option.textContent=label;guideSelect.append(option);}
-    let guideTurn=0,guideMirror=false,guideGeometry=scoutGuideGeometry('thirds');
+    let guideTurn=0,guideMirror=false,guideGeometry=scoutGuideGeometry(guideSelect.value);
     let guideAlignment={paths:[],focus:0,score:0};
     const guideSample=document.createElement('canvas'), guideSampleCtx=guideSample.getContext('2d',{willReadFrequently:true});
     function updateGuide(){guideGeometry=scoutGuideGeometry(guideSelect.value,guideTurn,guideMirror,window.innerWidth/window.innerHeight);guideAlignment={paths:[],focus:0,score:0};}
@@ -585,6 +622,9 @@
 
     function setMode(mode) {
       if (isScreenshotMode) exitScreenshotMode();
+      if(mode!=='sound')soundMeter.stop();
+      document.getElementById('sound-overlay').hidden=mode!=='sound';document.body.classList.toggle('mode-sound',mode==='sound');document.body.classList.toggle('mode-elzone',mode==='elzone');
+      if(mode==='sound')soundMeter.draw();
       activeMode = mode;
       document.getElementById('composition-tray').hidden=mode!=='composition';
       document.getElementById('composition-controls').hidden = mode !== 'composition';
@@ -654,18 +694,55 @@
     window.visualViewport?.addEventListener('resize',syncCanvasDimensions);
     syncCanvasDimensions();
 
+    async function refreshCameras(){
+      try{
+        const devices=(await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='videoinput');
+        cameraChoice.replaceChildren();
+        devices.forEach((d,i)=>{const option=document.createElement('option');option.value=d.deviceId;option.textContent=d.label||`Camera ${i+1}`;cameraChoice.append(option);});
+        if(!devices.length){const option=document.createElement('option');option.value='';option.textContent='Default camera';cameraChoice.append(option);}
+        cameraChoice.value=selectedCamera;cameraChoice.disabled=devices.length<2;
+        cameraChoice.title=devices.length<2?'This browser exposes one camera. Other physical lenses may not be separately available.':'Cameras made available by this browser';
+      }catch{cameraChoice.title='Camera list unavailable until permission is granted';}
+    }
+    function setupCameraControls(){
+      const capabilities=cameraTrack?.getCapabilities?.()||{},settings=cameraTrack?.getSettings?.()||{};
+      hardwareExposure=!!capabilities.exposureCompensation;
+      const cap=capabilities.exposureCompensation;
+      exposureSlider.min=hardwareExposure?cap.min:-2;exposureSlider.max=hardwareExposure?cap.max:2;exposureSlider.step=hardwareExposure?(cap.step||.1):.1;
+      exposureSlider.value=hardwareExposure?(settings.exposureCompensation||0):0;previewEV=0;previewLut=scoutExposureLut(0);
+      document.getElementById('exposure-label').textContent=hardwareExposure?'Camera EV':'Preview EV';document.getElementById('exposure-value').textContent=Number(exposureSlider.value).toFixed(1);
+      exposureSlider.title=hardwareExposure?'Camera exposure compensation':'Preview simulation; this browser does not expose hardware exposure compensation';
+      document.body.classList.toggle('has-camera-zoom',!!capabilities.zoom);
+      const zoom=capabilities.zoom,tools=document.getElementById('zoom-tools'),slider=document.getElementById('camera-zoom');tools.hidden=!zoom;
+      if(zoom){slider.min=zoom.min;slider.max=zoom.max;slider.step=zoom.step||.1;slider.value=settings.zoom||zoom.min;document.getElementById('zoom-value').textContent=Number(slider.value).toFixed(1)+'×';}
+    }
+    exposureSlider.addEventListener('input',()=>{
+      const value=Number(exposureSlider.value);document.getElementById('exposure-value').textContent=(value>0?'+':'')+value.toFixed(1);clearTimeout(exposureTimer);
+      if(!hardwareExposure||uploadedImg){previewEV=value;previewLut=scoutExposureLut(value);return;}
+      const track=cameraTrack;
+      exposureTimer=setTimeout(async()=>{
+        if(track!==cameraTrack)return;
+        try{await track.applyConstraints({advanced:[{exposureCompensation:value}]});}
+        catch{hardwareExposure=false;previewEV=value;previewLut=scoutExposureLut(value);document.getElementById('exposure-label').textContent='Preview EV';showNotice('Hardware exposure unavailable. Using a preview exposure simulation.');}
+      },100);
+    });
+    cameraChoice.addEventListener('change',()=>{selectedCamera=cameraChoice.value;uploadedImg=null;document.getElementById('live-btn').style.display='none';startCamera();});
+    document.getElementById('camera-zoom').addEventListener('input',async e=>{
+      const value=Number(e.target.value);try{await cameraTrack?.applyConstraints({advanced:[{zoom:value}]});document.getElementById('zoom-value').textContent=value.toFixed(1)+'×';}catch{showNotice('Zoom is unavailable for this camera.');}
+    });
+    navigator.mediaDevices?.addEventListener?.('devicechange',refreshCameras);
     async function startCamera() {
-      if (video.srcObject) video.srcObject.getTracks().forEach(t => t.stop());
+      const generation=++cameraGeneration;
+      clearTimeout(exposureTimer);video.srcObject?.getTracks().forEach(t=>t.stop());
+      cameraChoice.disabled=true;
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: facingMode, width: { ideal: 1920 }, height: { ideal: 1080 } },
-          audio: false
-        });
-        video.srcObject = stream;
-        await video.play();
-      } catch (err) {
-        alert("Camera error: " + err.message);
-      }
+        const getVideo=()=>navigator.mediaDevices.getUserMedia({video:{...(selectedCamera?{deviceId:{exact:selectedCamera}}:{facingMode}),width:{ideal:1920},height:{ideal:1080}},audio:false});
+        let stream;
+        try{stream=await getVideo();}catch(error){if(!selectedCamera)throw error;selectedCamera='';stream=await getVideo();showNotice('Selected camera unavailable. Using the default camera.');}
+        if(generation!==cameraGeneration){stream.getTracks().forEach(t=>t.stop());return;}
+        video.srcObject=stream;cameraTrack=stream.getVideoTracks()[0];selectedCamera=cameraTrack.getSettings().deviceId||'';
+        setupCameraControls();await video.play();await refreshCameras();
+      } catch (err) { if(generation!==cameraGeneration)return;cameraTrack=null;setupCameraControls();showNotice('Camera unavailable or permission denied. You can still open a photo from Controls.'); }
     }
 
     function syncMenuButton(){
@@ -691,7 +768,7 @@
       reader.onload = evt => {
         const img = new Image();
         img.onload = () => {
-          uploadedImg = img;
+          uploadedImg = img;document.getElementById('zoom-tools').hidden=true;document.body.classList.remove('has-camera-zoom');hardwareExposure=false;document.getElementById('exposure-label').textContent='Preview EV';exposureSlider.min=-2;exposureSlider.max=2;exposureSlider.step=.1;
           isFrozen = false;
           document.getElementById('freeze-toggle').checked = false;
           document.getElementById('live-btn').style.display = 'inline-block';
@@ -713,7 +790,7 @@
     document.getElementById('flip-btn').addEventListener('click', () => {
       uploadedImg = null;
       document.getElementById('live-btn').style.display = 'none';
-      facingMode = facingMode === 'environment' ? 'user' : 'environment';
+      selectedCamera='';facingMode = facingMode === 'environment' ? 'user' : 'environment';
       startCamera();
     });
 
@@ -1151,6 +1228,7 @@
         sy = Math.round((sh - sHeight) / 2);
       }
       rawCtx.drawImage(source, sx, sy, sWidth, sHeight, 0, 0, cw, ch);
+      if(previewEV!==0){const image=rawCtx.getImageData(0,0,cw,ch),data=image.data;for(let i=0;i<data.length;i+=4){data[i]=previewLut[data[i]];data[i+1]=previewLut[data[i+1]];data[i+2]=previewLut[data[i+2]];}rawCtx.putImageData(image,0,0);}
       return true;
     }
 
@@ -1171,6 +1249,7 @@
     let frameCount = 0;
 
     function renderLoop() {
+      if(activeMode==='sound'){requestAnimationFrame(renderLoop);return;}
       let hasFrame = false;
       if (!isFrozen) {
         if (uploadedImg) {
@@ -1205,7 +1284,7 @@
             guideAlignment.focus=guideAlignment.focus*(1-alpha)+next.focus*alpha;
             guideAlignment.focusPoint=next.focusPoint;
           }
-          scoutDrawGuide(viewCtx,viewCanvas.width,viewCanvas.height,guideGeometry,guideAlignment,document.getElementById('guide-glow').checked);
+          scoutDrawGuide(viewCtx,viewCanvas.width,viewCanvas.height,guideGeometry,guideAlignment,document.getElementById('guide-glow').checked,Number(document.getElementById('guide-threshold').value));
         }
         if (activeMode === 'ratios') {
           drawMultiRatiosOverlay(viewCtx, viewCanvas.width, viewCanvas.height);

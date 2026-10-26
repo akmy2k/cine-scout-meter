@@ -1,10 +1,11 @@
 /* Alignment estimates local contrast and edges, not aesthetic quality. */
 const SCOUT_GUIDES = {
+  roomCorner: 'Room corner / leading lines',
   thirds: 'Rule of thirds', golden: 'Golden section', spiral: 'Golden spiral', spiralgrid: 'Spiral section',
   goldenTriangle: 'Golden triangles', harmonious: 'Harmonious triangles', diagonal: 'Diagonal',
   doubleDiagonal: 'Double diagonal', cross: 'Cross', focal: 'Focal mass', vee: 'V arrangement',
   pyramid: 'Pyramid', radial: 'Radiating', funnel: 'Funnel', scurve: 'S curve', lshape: 'L arrangement',
-  roomCorner: 'Room corner / leading lines', circle: 'Circular', ccurve: 'C curve', balance: 'Balance', unbalanced: 'Asymmetric balance'
+  circle: 'Circular', ccurve: 'C curve', balance: 'Balance', unbalanced: 'Asymmetric balance'
 };
 function scoutGuideGeometry(id, turn = 0, mirror = false, aspect = 1) {
   const paths = [], anchors = [];
@@ -69,7 +70,7 @@ function scoutFrameEvidence(data,w,h) {
   return {edges,w,h,mean:sum/Math.max(1,(w-2)*(h-2)),max,focus:[fx,fy],prominence:best};
 }
 function scoutGuideAlignment(geometry,ev) {
-  if(ev.max<12 || ev.mean<.15) return {score:0,paths:geometry.paths.map(()=>0),focus:0};
+  if(ev.max<8 || ev.mean<.1) return {score:0,paths:geometry.paths.map(()=>0),focus:0};
   const pathScores=geometry.paths.map(path=>{
     let hits=0,sum=0,n=0;
     for(let j=1;j<path.length;j++){
@@ -77,29 +78,29 @@ function scoutGuideAlignment(geometry,ev) {
       for(let k=0;k<=steps;k++){
         const t=k/steps,x=Math.round((a[0]+(b[0]-a[0])*t)*(ev.w-1)),y=Math.round((a[1]+(b[1]-a[1])*t)*(ev.h-1));
         if(x<2||x>=ev.w-2||y<2||y>=ev.h-2)continue;
-        let best=0;for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++)best=Math.max(best,ev.edges[(y+dy)*ev.w+x+dx]);
-        sum+=best;if(best>Math.max(14,ev.mean*1.9))hits++;n++;
+        let best=0;for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++)best=Math.max(best,ev.edges[(y+dy)*ev.w+x+dx]);
+        sum+=best;if(best>Math.max(10,ev.mean*1.7))hits++;n++;
       }
     }
     if(!n)return 0;
     const coverage=hits/n,lift=(sum/n)/(ev.mean+2);
-    return Math.min(1,Math.max(0,(coverage-.22)/.5))*Math.min(1,Math.max(0,(lift-1.6)/1.8));
+    return Math.min(1,Math.max(0,(coverage-.14)/.43))*Math.min(1,Math.max(0,(lift-1.4)/1.5));
   });
   let focal=0;
   if(geometry.anchors.length&&ev.prominence>28){
     const distance=Math.min(...geometry.anchors.map(p=>Math.hypot(p[0]-ev.focus[0],p[1]-ev.focus[1])));
-    focal=Math.max(0,1-distance/.12)*Math.min(1,(ev.prominence-28)/45);
+    focal=Math.max(0,1-distance/.17)*Math.min(1,(ev.prominence-28)/45);
   }
   return {score:Math.max(focal,...pathScores),paths:pathScores,focus:focal,focusPoint:ev.focus};
 }
-function scoutDrawGuide(ctx,w,h,geometry,alignment={paths:[],focus:0},glow=true){
+function scoutDrawGuide(ctx,w,h,geometry,alignment={paths:[],focus:0},glow=true,threshold=.48){
   ctx.save();ctx.lineWidth=Math.max(1,Math.min(w,h)/650);ctx.lineJoin='round';ctx.lineCap='round';
   geometry.paths.forEach((path,i)=>{
-    const close=glow&&(alignment.paths[i]||0)>.68;
+    const close=glow&&(alignment.paths[i]||0)>threshold;
     ctx.strokeStyle=close?'rgba(111,240,188,.94)':'rgba(235,240,242,.42)';ctx.shadowColor='rgba(83,235,168,.8)';ctx.shadowBlur=close?22:0;ctx.lineWidth=close?Math.max(2.5,Math.min(w,h)/300):Math.max(1,Math.min(w,h)/650);
     ctx.beginPath();path.forEach(([x,y],j)=>j?ctx.lineTo(x*w,y*h):ctx.moveTo(x*w,y*h));ctx.stroke();
   });
-  for(const [x,y] of geometry.anchors){const near=alignment.focusPoint && Math.hypot(x-alignment.focusPoint[0],y-alignment.focusPoint[1])<.10;const close=glow&&alignment.focus>.68&&near;ctx.shadowBlur=close?24:0;ctx.lineWidth=close?2.8:1.2;ctx.strokeStyle=close?'rgba(111,240,188,.98)':'rgba(235,240,242,.55)';ctx.beginPath();ctx.arc(x*w,y*h,Math.max(close?7:4,Math.min(w,h)*(close?.013:.009)),0,Math.PI*2);ctx.stroke();}
+  for(const [x,y] of geometry.anchors){const near=alignment.focusPoint && Math.hypot(x-alignment.focusPoint[0],y-alignment.focusPoint[1])<.15;const close=glow&&alignment.focus>threshold&&near;ctx.shadowBlur=close?24:0;ctx.lineWidth=close?2.8:1.2;ctx.strokeStyle=close?'rgba(111,240,188,.98)':'rgba(235,240,242,.55)';ctx.beginPath();ctx.arc(x*w,y*h,Math.max(close?7:4,Math.min(w,h)*(close?.013:.009)),0,Math.PI*2);ctx.stroke();}
   ctx.restore();
 }
 

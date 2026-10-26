@@ -21,13 +21,15 @@ for(const id of Object.keys(SCOUT_GUIDES))for(const aspect of [.5,1,2])for(let t
 }
 console.log(`PASS: ${Object.keys(SCOUT_GUIDES).length} guides, rotation, mirroring, portrait/landscape, blank-frame rejection`);
 assert(SCOUT_GUIDES.roomCorner);
+assert.equal(Object.keys(SCOUT_GUIDES)[0],'roomCorner');
 assert(scoutGuideGeometry('roomCorner').paths.length>=3);
 const thirds=scoutGuideGeometry('thirds');
 const aligned=scoutGuideAlignment(thirds,frame(x=>x<26?30:220));
 const off=scoutGuideAlignment(thirds,frame(x=>x<42?30:220));
 assert(Math.max(...aligned.paths)>.68);
 assert(Math.max(...off.paths)<.68);
-console.log('PASS: aligned edge triggers, displaced edge does not');
+assert(Math.max(...scoutGuideAlignment(thirds,frame(x=>x<29?30:220)).paths)>.48);
+console.log('PASS: aligned and slightly offset edges trigger; displaced edge does not');
 let seed=7;
 const noise=scoutGuideAlignment(thirds,frame(()=>{seed=seed*16807%2147483647;return seed%256;}));
 assert(Math.max(...noise.paths)<.68);

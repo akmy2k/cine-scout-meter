@@ -23,3 +23,13 @@ Tap the shutter to freeze, then Save / Share photo. On iPhone choose Save Image 
 Double-tap the viewfinder to open controls, or tap the enlarged top handle. Composition opens a scrollable visual legend with a thumbnail and replication tip for each of 21 guides, including Room corner / leading lines for shooting into the L of a room. Tap a legend entry to apply it and return to the viewfinder. Show composition overlay and Alignment glow are separate switches. Double-tapping in Ratios restores the pre-gesture measurements, avoiding accidental nodes.
 
 In Composition mode, a bottom strip shows all 21 shape thumbnails. Swipe it sideways to browse, tap a shape to apply it, or use Show shapes / Hide shapes to collapse it. The top iris button reads Controls while shooting and Camera while the menu is open. Double-tap access remains available. Matched lines and focal marks now use a stronger, steady glow. The strip is excluded from saved photos and hidden outside Composition mode.
+
+## Camera, exposure and sound
+
+The shared exposure slider and camera selector appear across modes. Cameras are enumerated after permission; only cameras/lenses exposed by the browser can be selected. Optical wide/ultrawide/telephoto lenses may appear as one browser camera. A zoom slider appears only when camera capabilities expose it. Camera EV uses hardware exposure compensation when available. Preview EV is a linear-light image simulation and affects the displayed/analysed image, not the physical sensor.
+
+EL Zone legend is on the safe-area-aware right side; shutter moves to the bottom right in this mode. Room corner is now the first composition, with Forgiving default alignment, plus Balanced and Precise choices. Glow remains a visual heuristic, not a physical camera lock or object detector.
+
+Sound is a fifth mode: tap Enable microphone for a full-screen rolling 30-second level graph, RMS and peak dBFS. These are relative digital microphone levels, not calibrated dB SPL or an occupational/noise safety measurement. No sound is recorded, uploaded, or played back. Microphone stops when leaving Sound or hiding the page. Denied permission can be retried. Camera/lens controls and automatic gain depend on browser/device support.
+
+Checks: `node tests/composition.test.cjs` and `node tests/camera-sound.test.cjs`.
