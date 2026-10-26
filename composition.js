@@ -96,10 +96,10 @@ function scoutDrawGuide(ctx,w,h,geometry,alignment={paths:[],focus:0},glow=true)
   ctx.save();ctx.lineWidth=Math.max(1,Math.min(w,h)/650);ctx.lineJoin='round';ctx.lineCap='round';
   geometry.paths.forEach((path,i)=>{
     const close=glow&&(alignment.paths[i]||0)>.68;
-    ctx.strokeStyle=close?'rgba(111,240,188,.94)':'rgba(235,240,242,.42)';ctx.shadowColor='rgba(83,235,168,.8)';ctx.shadowBlur=close?12:0;
+    ctx.strokeStyle=close?'rgba(111,240,188,.94)':'rgba(235,240,242,.42)';ctx.shadowColor='rgba(83,235,168,.8)';ctx.shadowBlur=close?22:0;ctx.lineWidth=close?Math.max(2.5,Math.min(w,h)/300):Math.max(1,Math.min(w,h)/650);
     ctx.beginPath();path.forEach(([x,y],j)=>j?ctx.lineTo(x*w,y*h):ctx.moveTo(x*w,y*h));ctx.stroke();
   });
-  for(const [x,y] of geometry.anchors){const near=alignment.focusPoint && Math.hypot(x-alignment.focusPoint[0],y-alignment.focusPoint[1])<.10;const close=glow&&alignment.focus>.68&&near;ctx.shadowBlur=close?15:0;ctx.strokeStyle=close?'rgba(111,240,188,.98)':'rgba(235,240,242,.55)';ctx.beginPath();ctx.arc(x*w,y*h,Math.max(4,Math.min(w,h)*.009),0,Math.PI*2);ctx.stroke();}
+  for(const [x,y] of geometry.anchors){const near=alignment.focusPoint && Math.hypot(x-alignment.focusPoint[0],y-alignment.focusPoint[1])<.10;const close=glow&&alignment.focus>.68&&near;ctx.shadowBlur=close?24:0;ctx.lineWidth=close?2.8:1.2;ctx.strokeStyle=close?'rgba(111,240,188,.98)':'rgba(235,240,242,.55)';ctx.beginPath();ctx.arc(x*w,y*h,Math.max(close?7:4,Math.min(w,h)*(close?.013:.009)),0,Math.PI*2);ctx.stroke();}
   ctx.restore();
 }
 

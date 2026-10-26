@@ -257,6 +257,19 @@
     }
     #save-photos-btn { background: #10b981; color: #000; border: none; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 800; cursor: pointer; }
     #resume-btn { background: #333; color: #fff; border: 1px solid #666; padding: 4px 9px; border-radius: 12px; font-size: 11px; cursor: pointer; }
+    #menu-handle { top:max(8px,env(safe-area-inset-top));height:44px;width:auto;min-width:112px;gap:7px;padding:0 12px;border:1px solid #6a777b;border-radius:22px;color:#edf3f1;background:rgba(13,20,23,.92);font-size:12px;font-weight:700; }
+    #menu-handle::after { content:none; }
+    #menu { padding-top:calc(env(safe-area-inset-top,0px) + 66px); }
+    #composition-tray { position:fixed;z-index:7;bottom:max(12px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);width:min(700px,calc(100vw - 28px));display:flex;flex-direction:column;align-items:center;gap:6px; }
+    #composition-tray[hidden],body.menu-open #composition-tray,body.screenshot-mode #composition-tray { display:none; }
+    #composition-tray-toggle { display:flex;align-items:center;justify-content:center;gap:10px;max-width:100%;min-height:36px;padding:7px 13px;border:1px solid #687c77;border-radius:18px;background:rgba(12,21,23,.94);color:#edf3f1;font-size:12px;font-weight:700; }
+    #active-guide-name { color:#a2b5b1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+    #composition-shapes { display:flex;gap:6px;overflow-x:auto;width:100%;padding:7px;background:rgba(12,21,23,.94);border:1px solid #475955;border-radius:12px;touch-action:pan-x; }
+    #composition-shapes[hidden] { display:none; }
+    .shape-choice { flex:0 0 86px;min-height:76px;display:flex;flex-direction:column;align-items:center;gap:5px;border:1px solid #52635e;background:#182321;color:#e5eeea;border-radius:7px;padding:5px;font-size:10px;line-height:1.2;cursor:pointer; }
+    .shape-choice[aria-pressed="true"] { border-color:#a4f3cf;background:#274537; }
+    .shape-choice canvas { width:68px;height:40px; }
+    @media(orientation:landscape) and (max-height:500px) { .shape-choice { min-height:62px; }.shape-choice canvas{height:30px;width:52px;} #composition-tray{bottom:max(6px,env(safe-area-inset-bottom));gap:3px;} }
   </style>
 </head>
 <body>
@@ -292,7 +305,7 @@
   </div>
 
   <button id="capture-btn" title="Freeze and save frame" aria-label="Capture frame"></button>
-  <button id="menu-handle" title="Open controls" aria-label="Open controls" aria-expanded="false"></button>
+  <button id="menu-handle" title="Open controls" aria-label="Open controls" aria-expanded="false"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M7 4.5 16 6 20 13 15 20 7 18 3 11 7 4.5M7 4.5 7 13 15 13M16 6 11 14M20 13 11 8M15 20 16 11M7 18 12 10M3 11 13 17"/></svg><span id="menu-button-label">Controls</span></button>
 
   <div id="menu">
     <div class="drawer-section-title">Active Feature (One at a Time)</div>
@@ -405,6 +418,10 @@
     </button>
   </div>
 
+  <div id="composition-tray" hidden>
+    <button id="composition-tray-toggle" aria-expanded="true" aria-controls="composition-shapes">◇ Hide shapes <span id="active-guide-name">Rule of thirds</span></button>
+    <div id="composition-shapes" role="group" aria-label="Composition shapes"></div>
+  </div>
   <div id="hud-bottom">
     <div id="mini-meter">
       <div class="live-bar">
@@ -432,9 +449,9 @@
     </div>
   </div>
 
-  <script src="color-grouping.js?v=9"></script>
-  <script src="composition.js?v=9"></script>
-  <script src="ratio-labels.js?v=9"></script>
+  <script src="color-grouping.js?v=10"></script>
+  <script src="composition.js?v=10"></script>
+  <script src="ratio-labels.js?v=10"></script>
   <script>
     const video = document.getElementById('video');
     const viewCanvas = document.getElementById('view-canvas');
@@ -528,6 +545,8 @@
     function updateGuide(){guideGeometry=scoutGuideGeometry(guideSelect.value,guideTurn,guideMirror,window.innerWidth/window.innerHeight);guideAlignment={paths:[],focus:0,score:0};}
     function refreshGuideLegend(){
       document.getElementById('guide-instruction').textContent=SCOUT_GUIDE_TIPS[guideSelect.value]||'';
+      document.getElementById('active-guide-name').textContent=SCOUT_GUIDES[guideSelect.value];
+      document.querySelectorAll('.shape-choice').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.guide===guideSelect.value)));
       document.querySelectorAll('.guide-choice').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.guide===guideSelect.value)));
     }
     const legend=document.getElementById('composition-legend');
@@ -538,6 +557,15 @@
       const words=document.createElement('span'),title=document.createElement('strong'),tip=document.createElement('small');title.textContent=label;tip.textContent=SCOUT_GUIDE_TIPS[id];words.append(title,tip);button.append(thumbnail,words);
       button.addEventListener('click',()=>{guideSelect.value=id;document.getElementById('guide-visible').checked=true;updateGuide();refreshGuideLegend();menu.classList.remove('open');});legend.append(button);
     }
+    const shapeStrip=document.getElementById('composition-shapes');
+    for(const [id,label] of Object.entries(SCOUT_GUIDES)){
+      const button=document.createElement('button');button.type='button';button.className='shape-choice';button.dataset.guide=id;button.setAttribute('aria-label',label);button.setAttribute('aria-pressed',String(id===guideSelect.value));
+      const thumb=document.createElement('canvas');thumb.width=136;thumb.height=80;thumb.setAttribute('aria-hidden','true');scoutDrawGuide(thumb.getContext('2d'),136,80,scoutGuideGeometry(id,0,false,136/80),{paths:[],focus:0},false);
+      const name=document.createElement('span');name.textContent=label;button.append(thumb,name);button.addEventListener('click',()=>{guideSelect.value=id;document.getElementById('guide-visible').checked=true;updateGuide();refreshGuideLegend();});shapeStrip.append(button);
+    }
+    document.getElementById('composition-tray-toggle').addEventListener('click',()=>{
+      shapeStrip.hidden=!shapeStrip.hidden;const button=document.getElementById('composition-tray-toggle');button.setAttribute('aria-expanded',String(!shapeStrip.hidden));button.firstChild.textContent=shapeStrip.hidden?'◇ Show shapes ':'◇ Hide shapes ';
+    });
     refreshGuideLegend();
     guideSelect.addEventListener('change',()=>{updateGuide();refreshGuideLegend();});
     document.getElementById('guide-turn').addEventListener('click',()=>{guideTurn=(guideTurn+1)%4;updateGuide();});
@@ -558,6 +586,7 @@
     function setMode(mode) {
       if (isScreenshotMode) exitScreenshotMode();
       activeMode = mode;
+      document.getElementById('composition-tray').hidden=mode!=='composition';
       document.getElementById('composition-controls').hidden = mode !== 'composition';
       document.getElementById('color-controls').hidden = mode !== 'color';
       document.getElementById('grid').style.display = mode !== 'composition' && document.getElementById('grid-toggle').checked ? 'block' : 'none';
@@ -639,7 +668,10 @@
       }
     }
 
-    new MutationObserver(()=>handle.setAttribute('aria-expanded',String(menu.classList.contains('open')))).observe(menu,{attributes:true,attributeFilter:['class']});
+    function syncMenuButton(){
+      const open=menu.classList.contains('open');document.body.classList.toggle('menu-open',open);handle.setAttribute('aria-expanded',String(open));handle.setAttribute('aria-label',open?'Return to camera':'Open controls');handle.title=open?'Return to camera':'Open controls';document.getElementById('menu-button-label').textContent=open?'Camera':'Controls';
+    }
+    new MutationObserver(syncMenuButton).observe(menu,{attributes:true,attributeFilter:['class']});syncMenuButton();
     handle.addEventListener('click', () => {menu.classList.toggle('open');handle.setAttribute('aria-expanded',String(menu.classList.contains('open')));});
     document.getElementById('close-menu-btn').addEventListener('click', () => menu.classList.remove('open'));
 
