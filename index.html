@@ -316,6 +316,13 @@
     #color-info-toggle[aria-expanded="true"]{background:#315849;}
     #hud-bottom > #color-controls {pointer-events:auto;position:absolute;bottom:calc(100% + 8px);left:0;right:0;max-height:48dvh;overflow:auto;padding:14px;background:rgba(12,21,23,.96);border:1px solid #52665e;border-radius:12px;box-sizing:border-box;}
     body.menu-open #hud-bottom > #color-controls,body.menu-open #color-info-toggle,body.screenshot-mode #color-info-toggle,body.screenshot-mode #hud-bottom > #color-controls {display:none;}
+    #color-grouping {width:100%;min-width:0;font-size:14px;min-height:40px;}
+    @media(orientation:landscape) {
+      #hud-bottom > #color-controls {max-height:calc(100dvh - 160px - env(safe-area-inset-top) - env(safe-area-inset-bottom));gap:6px;padding:10px;}
+      #color-controls .drawer-section-title {display:none;}
+      #color-controls label {font-size:14px;color:#edf5f1;}
+      #color-grouping {min-height:36px;padding:6px!important;}
+    }
   </style>
 </head>
 <body>
@@ -470,7 +477,6 @@
       <option value="14" selected>Broad — combine similar shades</option>
       <option value="20">Very broad — fewer colour groups</option>
     </select>
-    <div style="font-size:11px;color:#aaa;margin:6px 0 12px">Broader grouping ignores small lighting and shade differences. Shows up to three main colour families.</div>
     <div class="harmony-box">
       <div>
         <div style="font-size:15px; font-weight:800;" id="harmony-type">Analyzing...</div>
@@ -526,10 +532,10 @@
     </div>
   </div>
 
-  <script src="color-grouping.js?v=17"></script>
-  <script src="composition.js?v=17"></script>
-  <script src="ratio-labels.js?v=17"></script>
-  <script src="camera-sound.js?v=17"></script>
+  <script src="color-grouping.js?v=18"></script>
+  <script src="composition.js?v=18"></script>
+  <script src="ratio-labels.js?v=18"></script>
+  <script src="camera-sound.js?v=18"></script>
   <script>
     const video = document.getElementById('video');
     const viewCanvas = document.getElementById('view-canvas');
