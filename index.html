@@ -315,12 +315,12 @@
       <select id="composition-guide" class="ui-select"></select>
       <p id="guide-instruction" class="control-help"></p>
       <div class="menu-row"><label for="guide-visible">Show composition overlay</label><input type="checkbox" id="guide-visible" checked></div>
+      <div class="menu-row"><label for="guide-glow">Alignment glow</label><input type="checkbox" id="guide-glow" checked></div>
       <div id="composition-legend" role="group" aria-label="Choose a composition to replicate"></div>
       <div class="menu-row">
         <button class="ui-btn" id="guide-turn">Rotate guide 90°</button>
         <label><input type="checkbox" id="guide-mirror"> Mirror</label>
       </div>
-      <div class="menu-row"><label for="guide-glow">Alignment glow</label><input type="checkbox" id="guide-glow" checked></div>
       <div class="menu-row"><label for="save-guide">Include guide in saved photo</label><input type="checkbox" id="save-guide" checked></div>
       <p class="control-help">Lines or focal marks glow green when nearby edges or contrast align. A visual hint, not a composition verdict. Rotate or mirror the guide to fit the scene.</p>
     </section>
@@ -648,7 +648,7 @@
     window.addEventListener('touchend', e => {
       const dy = e.changedTouches[0].clientY - touchStartY;
       if (touchStartY < 80 && dy > 45) menu.classList.add('open');
-      else if (menu.classList.contains('open') && dy < -45) menu.classList.remove('open');
+      else if (menu.classList.contains('open') && touchStartY < 80 && dy < -45) menu.classList.remove('open');
     }, { passive: true });
 
     document.getElementById('upload-btn').addEventListener('click', () => fileInput.click());
