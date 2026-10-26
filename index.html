@@ -422,6 +422,7 @@
 
   <script src="color-grouping.js"></script>
   <script src="composition.js"></script>
+  <script src="ratio-labels.js"></script>
   <script>
     const video = document.getElementById('video');
     const viewCanvas = document.getElementById('view-canvas');
@@ -897,7 +898,8 @@
         meter: measureSpotStabilized(n)
       }));
 
-      const rotRad = isVirtualLandscape ? (Math.PI / 2) : 0;
+      const rotRad = 0;
+      const occupiedLabels=[];
 
       ratioEdges.forEach(edge => {
         const p1 = pts[edge.from];
@@ -918,31 +920,26 @@
         const rawRatio = p1.meter.Y >= p2.meter.Y ? (p1.meter.Y / p2.meter.Y) : (p2.meter.Y / p1.meter.Y);
         const snapped = snapRatioGuesstimate(rawRatio);
         const ratioStr = p1.meter.Y >= p2.meter.Y ? `${snapped}:1` : `1:${snapped}`;
-        const label = `(F${p1.meter.fStop}) ${ratioStr} (F${p2.meter.fStop})`;
-
-        const mx = (p1.x + p2.x) / 2, my = (p1.y + p2.y) / 2;
-        ctx.translate(mx, my);
-        ctx.rotate(rotRad);
-
-        ctx.font = '900 17px -apple-system, BlinkMacSystemFont, monospace';
-        const boxW = ctx.measureText(label).width + 22, boxH = 34;
-
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.88)';
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 2.5;
-        ctx.beginPath();
-        ctx.roundRect(-boxW / 2, -boxH / 2, boxW, boxH, 8);
-        ctx.fill();
-        ctx.stroke();
-
-        ctx.fillStyle = '#fff';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(label, 0, 0);
+        const label = ratioStr;
+        const detail = `${edge.from+1}: f/${p1.meter.fStop}   ${edge.to+1}: f/${p2.meter.fStop}`;
+        const mx=(p1.x+p2.x)/2,my=(p1.y+p2.y)/2;
+        ctx.font='700 14px -apple-system, BlinkMacSystemFont, sans-serif';
+        const detailW=ctx.measureText(detail).width;
+        ctx.font='900 23px -apple-system, BlinkMacSystemFont, sans-serif';
+        const boxW=Math.min(width-16,Math.max(126,detailW+24,ctx.measureText(label).width+28)),boxH=58;
+        const box=scoutPlaceRatioLabel(mx,my,boxW,boxH,width,height,pts,occupiedLabels);
+        const cx=box.x+box.w/2,cy=box.y+box.h/2;
+        ctx.beginPath();ctx.moveTo(mx,my);ctx.lineTo(cx,cy);ctx.strokeStyle=color;ctx.lineWidth=1.5;ctx.stroke();
+        ctx.fillStyle='rgba(8,12,15,.96)';ctx.strokeStyle=color;ctx.lineWidth=2;
+        ctx.beginPath();ctx.roundRect(box.x,box.y,box.w,box.h,9);ctx.fill();ctx.stroke();
+        ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#f4f7f8';
+        ctx.fillText(label,cx,box.y+20);
+        ctx.font='700 14px -apple-system, BlinkMacSystemFont, sans-serif';
+        ctx.fillText(detail,cx,box.y+44);
         ctx.restore();
       });
 
-      pts.forEach(p => {
+      pts.forEach((p,index) => {
         ctx.save();
         ctx.translate(p.x, p.y);
         ctx.rotate(rotRad);
@@ -955,19 +952,9 @@
         ctx.strokeStyle = '#ffffff';
         ctx.stroke();
 
-        ctx.beginPath();
-        ctx.arc(0, 0, 3.5, 0, Math.PI * 2);
-        ctx.fillStyle = '#fde047';
-        ctx.fill();
-
-        const tag = `F${p.meter.fStop}`;
-        ctx.font = '900 14px monospace';
-        const tw = ctx.measureText(tag).width + 12;
-        ctx.fillStyle = 'rgba(0,0,0,0.85)';
-        ctx.fillRect(-tw / 2, -38, tw, 20);
-        ctx.fillStyle = '#fff';
-        ctx.textAlign = 'center';
-        ctx.fillText(tag, 0, -23);
+        ctx.font='900 16px -apple-system, BlinkMacSystemFont, sans-serif';
+        ctx.fillStyle='#f4f7f8';ctx.textAlign='center';ctx.textBaseline='middle';
+        ctx.fillText(String(index+1),0,1);
         ctx.restore();
       });
     }
