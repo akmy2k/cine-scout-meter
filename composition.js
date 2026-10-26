@@ -93,7 +93,7 @@ function scoutGuideAlignment(geometry,ev) {
   }
   return {score:Math.max(focal,...pathScores),paths:pathScores,focus:focal,focusPoint:ev.focus};
 }
-function scoutDrawGuide(ctx,w,h,geometry,alignment={paths:[],focus:0},glow=true,threshold=.48){
+function scoutDrawGuide(ctx,w,h,geometry,alignment={paths:[],focus:0},glow=true,threshold=.55){
   ctx.save();ctx.lineWidth=Math.max(1,Math.min(w,h)/650);ctx.lineJoin='round';ctx.lineCap='round';
   geometry.paths.forEach((path,i)=>{
     const close=glow&&(alignment.paths[i]||0)>threshold;
