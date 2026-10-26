@@ -9,10 +9,14 @@ function cineSpotReading(r,g,b){
 }
 function cineSpotEV(f,seconds,iso,nd){return Math.log2(f*f/seconds)-Math.log2(iso/100)+nd;}
 function cineSpotFstop(ev,seconds,iso,nd){return Math.sqrt(2**(ev-nd)*seconds*iso/100);}
+const CINE_SPOT_STOPS=[1,1.4,2,2.8,4,5.6,8,11,16,22,32,45,64,90,128];
+function cineSpotScale(f){return {value:Math.max(1,Math.min(128,f)),index:Math.max(0,Math.min(14,Math.round(2*Math.log2(Math.max(1e-12,f))))),edge:f<1?'≤':f>128?'≥':''};}
 class CineSpotMeter{
   constructor(){
     this.x=.5;this.y=.5;this.readout=document.getElementById('spot-reading');this.temperature=document.getElementById('spot-temperature');this.note=document.getElementById('spot-note');
     this.inputs=['spot-shutter','spot-iso','spot-nd','spot-known-f'].map(id=>document.getElementById(id));
+    this.scale=document.getElementById('spot-scale');
+    CINE_SPOT_STOPS.forEach(f=>{const tick=document.createElement('span');tick.textContent=f;this.scale.append(tick);});
     this.inputs.forEach(input=>input.addEventListener('input',()=>this.update()));
     document.getElementById('spot-calibrate').addEventListener('click',()=>{
       if(!this.sample||this.sample.clipped){this.note.textContent='Choose a midtone spot first.';return;}
@@ -30,12 +34,14 @@ class CineSpotMeter{
   update(){
     const sample=this.sample,[den,iso,nd]=this.values();this.temperature.textContent=sample?.kelvin?`≈ ${sample.kelvin} K · image estimate`:'K — · use a neutral grey/white target';
     if(!sample){this.readout.textContent='Aim at a midtone';this.note.textContent='Tap the camera image to move the spot.';return;}
-    if(sample.clipped){this.readout.textContent='Outside measuring range';this.note.textContent='Choose a spot away from clipped whites and deep blacks.';return;}
     if(!this.reference){this.readout.textContent='f/— · match a reference';this.note.textContent='Enter a trusted meter’s f-stop below, then tap Match. Auto exposure / white balance affect readings.';return;}
     if(!(den>0&&iso>0&&Number.isFinite(nd))){this.readout.textContent='Check settings';return;}
-    const delta=Math.log2(sample.luma/this.reference.luma),f=cineSpotFstop(this.reference.ev+delta,1/den,iso,nd);
-    this.readout.textContent=`f/${f.toFixed(1)} · ${delta>=0?'+':''}${delta.toFixed(1)} stops`;
-    this.note.textContent='Relative to matched spot · keep camera exposure and white balance fixed. Re-match after camera changes.';
+    const delta=Math.log2(Math.max(1e-8,sample.luma)/this.reference.luma),f=cineSpotFstop(this.reference.ev+delta,1/den,iso,nd),position=cineSpotScale(f);
+    const bound=position.edge||(sample.clipped?(sample.luma<.005?'≤':'≥'):'');
+    this.readout.textContent=`${bound}f/${position.value.toFixed(1)} · ${delta>=0?'+':''}${delta.toFixed(1)} stops`;
+    Array.from(this.scale.children).forEach((tick,i)=>tick.classList.toggle('active',i===position.index));
+    if(this.scaleIndex!==position.index){this.scale.children[position.index].scrollIntoView({block:'nearest',inline:'nearest'});this.scaleIndex=position.index;}
+    this.note.textContent=sample.clipped?'Sensor limit · aperture shown as a bound. Keep camera exposure fixed.':'Relative to matched spot · keep camera exposure and white balance fixed. Re-match after camera changes.';
   }
   draw(ctx,w,h){const x=this.x*w,y=this.y*h,r=Math.min(w,h)*.025;ctx.save();ctx.strokeStyle='#000';ctx.lineWidth=4;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.stroke();ctx.strokeStyle='#e9f7ee';ctx.lineWidth=1.5;ctx.stroke();ctx.beginPath();ctx.moveTo(x-r-6,y);ctx.lineTo(x+r+6,y);ctx.moveTo(x,y-r-6);ctx.lineTo(x,y+r+6);ctx.stroke();ctx.restore();}
 }

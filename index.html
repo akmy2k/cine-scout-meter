@@ -331,6 +331,9 @@
     #spot-panel summary{font-size:12px;padding:6px 0;cursor:pointer;}#spot-panel p{font-size:11px;line-height:1.4;color:#bccbc5;}.spot-match input{max-width:100px;}
     body.mode-spot #capture-btn{display:none;}
     @media(orientation:landscape){#spot-panel{left:auto;right:max(12px,env(safe-area-inset-right));transform:none;width:290px;max-height:calc(100dvh - 74px);padding:10px;gap:5px;}#spot-reading{font-size:21px;}}
+    #spot-scale{display:flex;gap:3px;overflow-x:auto;flex-shrink:0;padding:4px 0;touch-action:pan-x;}
+    #spot-scale span{min-width:33px;text-align:center;font-size:12px;color:#d0ddd7;padding:7px 3px;border-top:2px solid #566c62;}
+    #spot-scale span.active{border-color:#a4efcb;background:#315849;color:white;border-radius:4px;font-weight:700;}
   </style>
 </head>
 <body>
@@ -478,6 +481,7 @@
   </div>
   <section id="spot-panel" hidden aria-label="Spot meter">
     <output id="spot-reading" aria-live="off">Aim at a midtone</output>
+    <div id="spot-scale" role="img" aria-label="15 full-stop aperture positions from f/1 to f/128"></div>
     <output id="spot-temperature">K — · use a neutral grey/white target</output>
     <div class="spot-settings">
       <label>Shutter 1/<input id="spot-shutter" type="number" min="1" max="32000" value="48" inputmode="numeric"></label>
@@ -552,11 +556,11 @@
     </div>
   </div>
 
-  <script src="color-grouping.js?v=19"></script>
-  <script src="composition.js?v=19"></script>
-  <script src="ratio-labels.js?v=19"></script>
-  <script src="spot-meter.js?v=19"></script>
-  <script src="camera-sound.js?v=19"></script>
+  <script src="color-grouping.js?v=20"></script>
+  <script src="composition.js?v=20"></script>
+  <script src="ratio-labels.js?v=20"></script>
+  <script src="spot-meter.js?v=20"></script>
+  <script src="camera-sound.js?v=20"></script>
   <script>
     const video = document.getElementById('video');
     const viewCanvas = document.getElementById('view-canvas');
