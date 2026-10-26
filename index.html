@@ -296,6 +296,21 @@
     body.has-camera-zoom #reference-quick {top:calc(env(safe-area-inset-top,0px) + 148px);}
     #reference-opacity {width:min(45vw,260px);accent-color:#a4efcb;min-height:36px;}
     #reference-opacity-value {min-width:38px;text-align:right;}
+    #camera-tools { display:contents; }
+    #exposure-tools,#zoom-tools { position:fixed;top:max(8px,env(safe-area-inset-top));z-index:10;display:flex;flex-direction:column;gap:0;width:min(128px,calc((100vw - 144px)/2));height:44px;padding:3px 6px;background:rgba(12,21,23,.9);border-radius:9px;border:1px solid #52665e;color:#dfebe8; }
+    #exposure-tools {left:max(8px,env(safe-area-inset-left));} #zoom-tools {right:max(8px,env(safe-area-inset-right));}
+    .mini-control-title {display:flex;align-items:center;justify-content:space-between;gap:4px;font-size:9px;line-height:12px;}
+    #exposure-slider,#camera-zoom {width:100%;min-width:0;max-width:100%;height:24px;margin:0;accent-color:#a4efcb;}
+    .zoom-track {position:relative;width:100%;} #zoom-ticks{position:absolute;left:7px;right:7px;bottom:0;height:5px;pointer-events:none;} #zoom-ticks span{position:absolute;width:1px;height:5px;background:#d2e5dd;}
+    #front-camera-toggle {position:fixed;z-index:10;top:calc(env(safe-area-inset-top,0px) + 58px);left:50%;transform:translateX(-50%);min-height:30px;padding:4px 11px;border:1px solid #627b70;border-radius:16px;background:rgba(12,21,23,.92);color:#e8f1ec;font-size:11px;}
+    body.mode-sound #front-camera-toggle {display:none;} #camera-choice{position:static;max-width:58%;min-width:90px;margin:0;}
+    #quick-rot-btn {position:static;transform:none!important;align-self:flex-start;min-height:36px;}
+    #sound-controls,body.has-camera-zoom #sound-controls {top:calc(env(safe-area-inset-top,0px) + 64px);flex-wrap:wrap;gap:6px;}
+    #sound-status{flex:1;min-width:110px;font-size:10px;line-height:1.3;}
+    #sound-record[data-recording="true"]{background:#803a36;border-color:#ffa58c;color:#fff1e9;}
+    #sound-target{width:min(100%,320px);accent-color:#e3c083;} #sound-settings{display:flex;flex-direction:column;gap:9px;} #sound-settings[hidden]{display:none;}
+    #reference-quick,body.has-camera-zoom #reference-quick {top:calc(env(safe-area-inset-top,0px) + 100px);}
+    @media(orientation:landscape){#exposure-tools,#zoom-tools{width:min(155px,calc((100vw - 144px)/2));}}
   </style>
 </head>
 <body>
@@ -314,9 +329,9 @@
 
   <canvas id="view-canvas"></canvas>
   <div id="camera-tools">
-    <label for="exposure-slider" id="exposure-label">Preview EV</label><input id="exposure-slider" type="range" min="-2" max="2" step="0.1" value="0" aria-label="Exposure compensation"><output id="exposure-value">0.0</output>
-    <select id="camera-choice" aria-label="Available cameras"><option value="">Camera</option></select>
-    <label id="zoom-tools" hidden>Zoom <input type="range" id="camera-zoom" aria-label="Camera zoom"><output id="zoom-value">1×</output></label>
+    <div id="exposure-tools"><div class="mini-control-title"><label for="exposure-slider" id="exposure-label">Preview EV</label><output id="exposure-value">0.0</output></div><input id="exposure-slider" type="range" min="-2" max="2" step="0.1" value="0" aria-label="Exposure compensation"></div>
+    <div id="zoom-tools"><div class="mini-control-title"><label for="camera-zoom">Zoom</label><output id="zoom-value">1.0×</output></div><div class="zoom-track"><input type="range" id="camera-zoom" min="1" max="3" step="0.1" value="1" aria-label="Camera zoom"><div id="zoom-ticks" aria-hidden="true"></div></div></div>
+    <button id="front-camera-toggle" aria-label="Switch front/rear camera">↺ Front</button>
   </div>
   <div id="reference-quick" hidden>
     <label><input type="checkbox" id="reference-quick-enabled" checked> Reference</label>
@@ -324,7 +339,7 @@
   </div>
   <section id="sound-overlay" hidden aria-label="Sound level graph">
     <canvas id="sound-canvas" aria-label="Relative microphone level history"></canvas>
-    <div id="sound-controls"><button class="ui-btn" id="sound-start">Enable microphone</button><span id="sound-status" role="status">Microphone off · no recording</span></div>
+    <div id="sound-controls"><button class="ui-btn" id="sound-start">Enable microphone</button><button class="ui-btn" id="sound-record" disabled>Record</button><button class="ui-btn" id="sound-save" disabled>Save audio</button><span id="sound-status" role="status">Microphone off</span></div>
   </section>
   <div id="grid"></div>
   <div id="el-legend"></div>
@@ -336,7 +351,7 @@
     <button id="resume-btn">✕ Resume</button>
   </div>
 
-  <button id="quick-rot-btn" title="Enter full screen" aria-label="Enter full screen">⛶ Full screen</button>
+
   <div id="app-notice" role="status" aria-live="polite"></div>
 
   <div id="ratio-hud">
@@ -358,6 +373,7 @@
     </div>
 
     <div class="drawer-section-title">Screen orientation</div>
+  <button id="quick-rot-btn" title="Enter full screen" aria-label="Enter full screen">⛶ Full screen</button>
     <div class="mode-tabs" style="grid-template-columns: repeat(2, 1fr);">
       <button class="mode-tab active" id="layout-vert-btn">Auto rotate</button>
       <button class="mode-tab" id="layout-land-btn">Landscape full screen</button>
@@ -418,12 +434,18 @@
     </div>
 
     </section>
+    <section id="sound-settings" hidden>
+      <label for="sound-target">Quiet-pause target <output id="sound-target-value">−60 dBFS</output></label>
+      <input type="range" id="sound-target" min="-80" max="-20" step="1" value="-60" aria-label="Room tone recording target">
+      <p class="control-help">Adjustable recording reference, not room dBA. ACX narration uses a noise floor no higher than −60 dB RMS. Compare quiet pauses after setting recording gain; this is not a universal film-room limit. <a href="https://help.acx.com/s/article/what-are-the-acx-audio-submission-requirements" target="_blank" rel="noopener">Source</a></p>
+    </section>
     <div class="drawer-section-title">Reference photo overlay</div>
     <div class="menu-row"><button class="ui-btn" id="reference-load">Load reference photo</button><button class="ui-btn" id="reference-remove" disabled>Remove</button></div>
     <div class="menu-row"><label for="reference-enabled">Show photo overlay</label><input type="checkbox" id="reference-enabled" disabled></div>
     <div class="menu-row"><label for="reference-opacity">Opacity</label><input type="range" id="reference-opacity" min="0" max="100" step="1" value="40" aria-label="Reference photo opacity"><output id="reference-opacity-value">40%</output></div>
     <p id="reference-status" class="control-help">Load a reference to line up the live camera. Camera measurements ignore the overlay; captured frames include it when visible.</p>
     <div class="drawer-section-title">Controls & Source</div>
+    <div class="menu-row"><label for="camera-choice">Available camera / lens</label><select id="camera-choice" aria-label="Available cameras"><option value="">Camera</option></select></div>
 
     <div class="menu-row">
       <span>Image Source</span>
@@ -497,10 +519,10 @@
     </div>
   </div>
 
-  <script src="color-grouping.js?v=12"></script>
-  <script src="composition.js?v=12"></script>
-  <script src="ratio-labels.js?v=12"></script>
-  <script src="camera-sound.js?v=12"></script>
+  <script src="color-grouping.js?v=13"></script>
+  <script src="composition.js?v=13"></script>
+  <script src="ratio-labels.js?v=13"></script>
+  <script src="camera-sound.js?v=13"></script>
   <script>
     const video = document.getElementById('video');
     const viewCanvas = document.getElementById('view-canvas');
@@ -517,7 +539,7 @@
     let autoTiltEnabled = true;
     let isRotationLocked = false;
     let facingMode = 'environment';
-    let cameraGeneration=0;
+    let cameraGeneration=0,hardwareZoom=false,previewZoom=1;
     let selectedCamera='',cameraTrack=null,hardwareExposure=false,previewEV=0,previewLut=scoutExposureLut(0),exposureTimer;
     const exposureSlider=document.getElementById('exposure-slider'),cameraChoice=document.getElementById('camera-choice');
     const soundMeter=new ScoutSoundMeter(document.getElementById('sound-canvas'),document.getElementById('sound-start'),document.getElementById('sound-status'));
@@ -581,6 +603,7 @@
       if(document.fullscreenElement) await document.exitFullscreen();
       else if(document.webkitFullscreenElement) document.webkitExitFullscreen();
       else await enterImmersive(window.innerWidth>window.innerHeight);
+      menu.classList.remove('open');
     });
     document.getElementById('start-app-btn').addEventListener('click',async()=>{
       // Invoke fullscreen while this tap still carries browser user activation.
@@ -643,6 +666,7 @@
     function setMode(mode) {
       if (isScreenshotMode) exitScreenshotMode();
       if(mode!=='sound')soundMeter.stop();
+      document.getElementById('sound-settings').hidden=mode!=='sound';
       document.getElementById('sound-overlay').hidden=mode!=='sound';document.body.classList.toggle('mode-sound',mode==='sound');document.body.classList.toggle('mode-elzone',mode==='elzone');
       if(mode==='sound')soundMeter.draw();
       activeMode = mode;
@@ -721,6 +745,7 @@
         devices.forEach((d,i)=>{const option=document.createElement('option');option.value=d.deviceId;option.textContent=d.label||`Camera ${i+1}`;cameraChoice.append(option);});
         if(!devices.length){const option=document.createElement('option');option.value='';option.textContent='Default camera';cameraChoice.append(option);}
         cameraChoice.value=selectedCamera;cameraChoice.disabled=devices.length<2;
+        document.getElementById('front-camera-toggle').disabled=devices.length<2;
         cameraChoice.title=devices.length<2?'This browser exposes one camera. Other physical lenses may not be separately available.':'Cameras made available by this browser';
       }catch{cameraChoice.title='Camera list unavailable until permission is granted';}
     }
@@ -732,9 +757,16 @@
       exposureSlider.value=hardwareExposure?(settings.exposureCompensation||0):0;previewEV=0;previewLut=scoutExposureLut(0);
       document.getElementById('exposure-label').textContent=hardwareExposure?'Camera EV':'Preview EV';document.getElementById('exposure-value').textContent=Number(exposureSlider.value).toFixed(1);
       exposureSlider.title=hardwareExposure?'Camera exposure compensation':'Preview simulation; this browser does not expose hardware exposure compensation';
-      document.body.classList.toggle('has-camera-zoom',!!capabilities.zoom);
-      const zoom=capabilities.zoom,tools=document.getElementById('zoom-tools'),slider=document.getElementById('camera-zoom');tools.hidden=!zoom;
-      if(zoom){slider.min=zoom.min;slider.max=zoom.max;slider.step=zoom.step||.1;slider.value=settings.zoom||zoom.min;document.getElementById('zoom-value').textContent=Number(slider.value).toFixed(1)+'×';}
+      const zoom=capabilities.zoom;hardwareZoom=!!zoom;previewZoom=1;
+      const slider=document.getElementById('camera-zoom');slider.min=zoom?zoom.min:1;slider.max=zoom?Math.max(zoom.min,Math.min(3,zoom.max)):3;slider.step=zoom?(zoom.step||.1):.1;slider.value=zoom?(settings.zoom||zoom.min):1;
+      slider.title=zoom?'Zoom supported by this camera':'Preview crop zoom. This browser does not expose hardware zoom.';
+      document.getElementById('zoom-value').textContent=Number(slider.value).toFixed(1)+'×';
+      const min=Number(slider.min),max=Number(slider.max),ticks=document.getElementById('zoom-ticks');ticks.replaceChildren();
+      const marks=min<=.5&&max>=3?[.5,1,2,3]:min===1&&max>=3?[1,1.5,2,3]:Array.from({length:4},(_,i)=>min+(max-min)*i/3);
+      marks.forEach(value=>{const tick=document.createElement('span');tick.style.left=(max>min?100*(value-min)/(max-min):0)+'%';tick.title=value.toFixed(1)+'×';ticks.append(tick);});
+      const facing=settings.facingMode;if(facing==='user'||facing==='environment')facingMode=facing;
+      document.getElementById('front-camera-toggle').textContent=facingMode==='user'?'↺ Rear':'↺ Front';
+
     }
     exposureSlider.addEventListener('input',()=>{
       const value=Number(exposureSlider.value);document.getElementById('exposure-value').textContent=(value>0?'+':'')+value.toFixed(1);clearTimeout(exposureTimer);
@@ -748,8 +780,11 @@
     });
     cameraChoice.addEventListener('change',()=>{selectedCamera=cameraChoice.value;uploadedImg=null;document.getElementById('live-btn').style.display='none';startCamera();});
     document.getElementById('camera-zoom').addEventListener('input',async e=>{
-      const value=Number(e.target.value);try{await cameraTrack?.applyConstraints({advanced:[{zoom:value}]});document.getElementById('zoom-value').textContent=value.toFixed(1)+'×';}catch{showNotice('Zoom is unavailable for this camera.');}
+      const value=Number(e.target.value);document.getElementById('zoom-value').textContent=value.toFixed(1)+'×';
+      if(!hardwareZoom||uploadedImg){previewZoom=value;return;}
+      try{await cameraTrack?.applyConstraints({advanced:[{zoom:value}]});}catch{hardwareZoom=false;previewZoom=Math.max(1,value);showNotice('Hardware zoom unavailable. Using a preview crop.');}
     });
+    document.getElementById('front-camera-toggle').addEventListener('click',()=>document.getElementById('flip-btn').click());
     navigator.mediaDevices?.addEventListener?.('devicechange',refreshCameras);
     async function startCamera() {
       const generation=++cameraGeneration;
@@ -812,7 +847,7 @@
       reader.onload = evt => {
         const img = new Image();
         img.onload = () => {
-          uploadedImg = img;document.getElementById('zoom-tools').hidden=true;document.body.classList.remove('has-camera-zoom');hardwareExposure=false;document.getElementById('exposure-label').textContent='Preview EV';exposureSlider.min=-2;exposureSlider.max=2;exposureSlider.step=.1;
+          uploadedImg = img;hardwareZoom=false;previewZoom=1;document.getElementById('camera-zoom').min=1;document.getElementById('camera-zoom').max=3;document.getElementById('camera-zoom').value=1;document.getElementById('zoom-value').textContent='1.0×';hardwareExposure=false;document.getElementById('exposure-label').textContent='Preview EV';exposureSlider.min=-2;exposureSlider.max=2;exposureSlider.step=.1;
           isFrozen = false;
           document.getElementById('freeze-toggle').checked = false;
           document.getElementById('live-btn').style.display = 'inline-block';
@@ -1273,6 +1308,7 @@
         sHeight = Math.round(sw / targetAspect);
         sy = Math.round((sh - sHeight) / 2);
       }
+      if(previewZoom>1){const oldW=sWidth,oldH=sHeight;sWidth/=previewZoom;sHeight/=previewZoom;sx+=(oldW-sWidth)/2;sy+=(oldH-sHeight)/2;}
       rawCtx.drawImage(source, sx, sy, sWidth, sHeight, 0, 0, cw, ch);
       if(previewEV!==0){const image=rawCtx.getImageData(0,0,cw,ch),data=image.data;for(let i=0;i<data.length;i+=4){data[i]=previewLut[data[i]];data[i+1]=previewLut[data[i+1]];data[i+2]=previewLut[data[i+2]];}rawCtx.putImageData(image,0,0);}
       return true;

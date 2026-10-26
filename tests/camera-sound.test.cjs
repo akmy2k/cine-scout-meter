@@ -22,3 +22,21 @@ Object.assign(meter,{generation:0,button:{},status:{},draw(){}});
   assert.equal(stopped,1);assert.equal(meter.stream,null);assert.equal(meter.button.disabled,false);
   console.log('PASS late microphone permission releases stream after mode exit');
 })().catch(error=>{console.error(error);process.exitCode=1;});
+
+// Exercise recording state and preserve the actual supported audio format.
+assert.equal(scoutAudioExtension('audio/mp4'),'m4a');
+assert.equal(scoutAudioExtension('audio/webm;codecs=opus'),'webm');
+global.MediaRecorder=class {
+  static isTypeSupported(type){return type==='audio/mp4';}
+  constructor(stream,options){this.mimeType=options.mimeType;this.state='inactive';}
+  start(){this.state='recording';}
+  stop(){this.state='inactive';this.ondataavailable({data:new Blob(['audio'],{type:this.mimeType})});this.onstop();}
+};
+const recording=Object.create(ScoutSoundMeter.prototype);
+Object.assign(recording,{stream:{},recordButton:{dataset:{}},saveButton:{disabled:true},status:{}});
+recording.startRecording();assert.equal(recording.recorder.state,'recording');
+assert.equal(recording.recordButton.textContent,'Stop record');
+recording.stopRecording();assert.equal(recording.recordedFile.type,'audio/mp4');
+assert(recording.recordedFile.name.endsWith('.m4a'));assert.equal(recording.saveButton.disabled,false);
+assert.equal(recording.recordButton.textContent,'Record');
+console.log('PASS recording start/stop, real MIME extension and export readiness');

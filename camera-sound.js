@@ -11,27 +11,32 @@ function scoutAudioLevels(samples) {
   for(const sample of samples){sum+=sample*sample;peak=Math.max(peak,Math.abs(sample));}
   return {rms:Math.max(-90,20*Math.log10(Math.sqrt(sum/Math.max(1,samples.length))||1e-9)),peak:Math.max(-90,20*Math.log10(peak||1e-9))};
 }
+function scoutAudioExtension(type='') { return type.includes('mp4')?'m4a':type.includes('ogg')?'ogg':type.includes('webm')?'webm':'bin'; }
 class ScoutSoundMeter {
   constructor(canvas,button,status){
     this.canvas=canvas;this.button=button;this.status=status;this.history=[];this.generation=0;
-    button.addEventListener('click',()=>this.stream?this.stop():this.start());
+    this.recordButton=document.getElementById('sound-record');this.saveButton=document.getElementById('sound-save');this.target=-60;
+    button.addEventListener('click',()=>this.stream||this.pendingContext?this.stop():this.start());
+    this.recordButton.addEventListener('click',()=>this.recorder?.state==='recording'?this.stopRecording():this.startRecording());
+    this.saveButton.addEventListener('click',()=>this.saveRecording());
+    document.getElementById('sound-target').addEventListener('input',e=>{this.target=Number(e.target.value);document.getElementById('sound-target-value').textContent=this.target+' dBFS';this.draw();});
     document.addEventListener('visibilitychange',()=>{if(document.hidden)this.stop();});
     this.draw();
   }
   async start(){
-    const generation=++this.generation;this.button.disabled=true;this.status.textContent='Waiting for microphone permission…';
+    const generation=++this.generation;this.button.disabled=false;this.button.textContent='Cancel mic';this.status.textContent='Waiting for microphone permission…';
     let stream,context;
     try{
       const AudioCtx=window.AudioContext||window.webkitAudioContext;
       context=new AudioCtx();this.pendingContext=context;await context.resume();
       if(generation!==this.generation){context.close();return;}
       stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false},video:false});
-      if(generation!==this.generation){stream.getTracks().forEach(t=>t.stop());return;}
       if(generation!==this.generation){stream.getTracks().forEach(t=>t.stop());context.close();return;}
       this.pendingContext=null;this.stream=stream;this.context=context;this.analyser=context.createAnalyser();this.analyser.fftSize=2048;
       this.source=context.createMediaStreamSource(stream);this.source.connect(this.analyser);
       this.samples=new Float32Array(this.analyser.fftSize);this.history=[];this.started=performance.now();this.lastSample=0;
       this.button.textContent='Stop microphone';this.status.textContent='Live microphone · local analysis only';
+      if(this.recordButton){this.recordButton.disabled=typeof MediaRecorder==='undefined';this.recordButton.title=this.recordButton.disabled?'Recording is unavailable in this browser':'Record up to 60 seconds locally';}
       const tick=now=>{
         if(generation!==this.generation)return;
         if(now-this.lastSample>=100){this.lastSample=now;this.analyser.getFloatTimeDomainData(this.samples);this.levels=scoutAudioLevels(this.samples);this.history.push({time:now,value:this.levels.rms});this.history=this.history.filter(p=>now-p.time<=30000);this.draw(now);}
@@ -43,17 +48,47 @@ class ScoutSoundMeter {
     }finally{if(generation===this.generation)this.button.disabled=false;}
   }
   stop(){
+    this.stopRecording();
     this.generation++;cancelAnimationFrame(this.frame);this.source?.disconnect();this.stream?.getTracks().forEach(t=>t.stop());this.context?.close();this.pendingContext?.close();this.pendingContext=null;
-    this.stream=null;this.context=null;this.button.disabled=false;this.button.textContent='Enable microphone';this.status.textContent='Microphone off · no recording';this.draw();
+    this.stream=null;this.context=null;this.button.disabled=false;this.button.textContent='Enable microphone';this.status.textContent='Microphone off';if(this.recordButton)this.recordButton.disabled=true;this.draw();
+  }
+  startRecording(){
+    if(!this.stream||typeof MediaRecorder==='undefined')return;
+    try{
+      const type=['audio/mp4','audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus'].find(t=>MediaRecorder.isTypeSupported(t));
+      const recorder=new MediaRecorder(this.stream,type?{mimeType:type}:undefined),chunks=[];
+      this.recorder=recorder;this.recordButton.disabled=true;
+      recorder.ondataavailable=event=>{if(event.data?.size)chunks.push(event.data);};
+      recorder.onstop=()=>{
+        clearTimeout(this.recordTimer);
+        if(chunks.length){const mime=recorder.mimeType||chunks[0].type||'application/octet-stream';this.recordedFile=new File([new Blob(chunks,{type:mime})],`cine-scout-room-tone-${Date.now()}.${scoutAudioExtension(mime)}`,{type:mime});this.saveButton.disabled=false;this.status.textContent='Recording ready · Save audio';}
+        else this.status.textContent='No audio captured. Try recording again.';
+        this.recordButton.dataset.recording='false';this.recordButton.textContent='Record';this.recordButton.disabled=!this.stream;
+      };
+      recorder.onerror=()=>{clearTimeout(this.recordTimer);this.status.textContent='Recording failed. Try again.';this.recordButton.dataset.recording='false';this.recordButton.textContent='Record';this.recordButton.disabled=!this.stream;};
+      recorder.start(1000);this.recordButton.disabled=false;this.recordButton.dataset.recording='true';this.recordButton.textContent='Stop record';this.status.textContent='Recording locally · 60 s maximum';
+      this.recordTimer=setTimeout(()=>this.stopRecording(),60000);
+    }catch{this.status.textContent='Recording unavailable in this browser.';this.recordButton.disabled=!this.stream;}
+  }
+  stopRecording(){if(this.recorder?.state==='recording'){this.recordButton.disabled=true;this.recorder.stop();clearTimeout(this.recordTimer);}}
+  async saveRecording(){
+    if(!this.recordedFile)return;
+    const file=this.recordedFile;
+    try{if(navigator.canShare?.({files:[file]})){await navigator.share({files:[file],title:'Cine Scout room tone'});return;}}
+    catch(error){if(error.name==='AbortError')return;}
+    const url=URL.createObjectURL(file),link=document.createElement('a');link.href=url;link.download=file.name;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
   }
   draw(now=performance.now()){
     const c=this.canvas,w=c.width=window.innerWidth,h=c.height=window.innerHeight,ctx=c.getContext('2d');
     ctx.fillStyle='#0c1419';ctx.fillRect(0,0,w,h);
     const style=getComputedStyle(document.documentElement),safe=name=>parseFloat(style.getPropertyValue(name))||0;
     const footer=Math.max(17,safe('--safe-bottom')+8);
-    const left=Math.max(52,safe('--safe-left')+20),right=w-Math.max(22,safe('--safe-right')+12),top=Math.max(210,Math.min(240,h*.49),document.getElementById('sound-controls').getBoundingClientRect().bottom+65),bottom=Math.max(top+35,h-Math.max(62,safe('--safe-bottom')+50)),plotH=bottom-top;
+    const left=Math.max(44,safe('--safe-left')+16),right=w-Math.max(16,safe('--safe-right')+10),top=Math.max(138,document.getElementById('sound-controls').getBoundingClientRect().bottom+48),bottom=Math.max(top+35,h-Math.max(48,safe('--safe-bottom')+38)),plotH=bottom-top;
     ctx.font='12px -apple-system, sans-serif';ctx.textAlign='right';ctx.textBaseline='middle';
     for(let db=-90;db<=0;db+=15){const y=bottom-(db+90)/90*plotH;ctx.strokeStyle='#35454d';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(right,y);ctx.stroke();ctx.fillStyle='#a4b7be';ctx.fillText(String(db),left-8,y);}
+    const target=Number.isFinite(this.target)?this.target:-60,ty=bottom-(target+90)/90*plotH;
+    ctx.fillStyle='rgba(116,181,145,.06)';ctx.fillRect(left,ty,right-left,bottom-ty);ctx.strokeStyle='#e4bf7d';ctx.lineWidth=1.5;ctx.setLineDash([7,5]);ctx.beginPath();ctx.moveTo(left,ty);ctx.lineTo(right,ty);ctx.stroke();ctx.setLineDash([]);
+    ctx.textAlign='right';ctx.fillStyle='#f1d49d';ctx.font='11px -apple-system,sans-serif';ctx.fillText(`Quiet-pause target ${target} dBFS`,right-4,ty-10);
     if(this.stream&&this.levels){
       ctx.textAlign='left';ctx.fillStyle='#b4f4d5';ctx.font='700 30px -apple-system, sans-serif';ctx.fillText(`${this.levels.rms.toFixed(1)} dBFS`,left,top-38);
       ctx.font='13px -apple-system, sans-serif';ctx.fillStyle=this.levels.peak>=-.5?'#ff9c81':'#d5e4e8';ctx.fillText(`Peak ${this.levels.peak.toFixed(1)} dBFS${this.levels.peak>=-.5?' · CLIPPING':''}`,left,top-12);
