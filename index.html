@@ -694,7 +694,7 @@
     </div>
   </div>
 
-  <script src="meter-runtime.js?v=35"></script>
+  <script src="meter-runtime.js?v=36"></script>
   <script>
     const video = document.getElementById('video');
     const viewCanvas = document.getElementById('view-canvas');
@@ -964,7 +964,14 @@
         cameraChoice.value=selectedCamera;cameraChoice.disabled=devices.length<2;
         lensChoices.replaceChildren();lensChoices.hidden=devices.length<2;
         const activeId=cameraTrack?.getSettings?.().deviceId||selectedCamera;
-        devices.forEach((d,i)=>{const button=document.createElement('button');button.type='button';button.textContent=d.label||`Camera ${i+1}`;button.title=button.textContent;button.setAttribute('aria-pressed',String(d.deviceId===activeId));button.addEventListener('click',()=>{cameraChoice.value=d.deviceId;cameraChoice.dispatchEvent(new Event('change'));});lensChoices.append(button);});
+        if(devices.length>1){
+          const index=Math.max(0,devices.findIndex(d=>d.deviceId===activeId));
+          const button=document.createElement('button');button.type='button';button.id='camera-cycle';
+          button.textContent='↻ Camera '+(index+1)+' / '+devices.length;
+          button.title=devices[index].label||`Camera ${index+1}`;button.setAttribute('aria-label','Switch camera');
+          button.addEventListener('click',()=>{button.disabled=true;cameraChoice.value=devices[(index+1)%devices.length].deviceId;cameraChoice.dispatchEvent(new Event('change'));});
+          lensChoices.append(button);
+        }
         cameraChoice.title=devices.length<2?'This browser exposes one camera. Other physical lenses may not be separately available.':'Cameras made available by this browser';
       }catch{cameraChoice.title='Camera list unavailable until permission is granted';}
     }
