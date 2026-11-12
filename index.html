@@ -170,16 +170,16 @@
     #composition-guide { width:100%; min-height:44px; }
     #composition-legend { display:flex;flex-direction:column;gap:5px;max-height:330px;overflow-y:auto;touch-action:pan-y; }
     .guide-choice { display:flex;align-items:center;gap:12px;flex-shrink:0;width:100%;padding:9px;background:#171d20;border:1px solid #3d484b;border-radius:7px;color:#e9eef0;text-align:left;cursor:pointer; }
-    .guide-choice[aria-pressed="true"] { border-color:#8bd8b7;background:#22352e; }
+    .guide-choice[aria-pressed="true"] { border-color:#dadada;background:#303030; }
     .guide-choice canvas { flex-shrink:0;width:72px;height:46px;background:#101619;border-radius:3px; }
     .guide-choice strong { display:block;font-size:13px;margin-bottom:3px; }
     .guide-choice small { display:block;font-size:11px;line-height:1.4;color:#b8c5c8; }
     #menu-handle { height:44px;min-width:80px; }
 
-    #app-notice { position:fixed; left:50%; bottom:max(80px,env(safe-area-inset-bottom)); transform:translateX(-50%); z-index:220; background:#181b1b; color:#edf3f1; border:1px solid #6a7872; border-radius:12px; padding:12px 16px; width:min(90vw,440px); font-size:13px; line-height:1.5; display:none; }
+    #app-notice { position:fixed; left:50%; bottom:max(80px,env(safe-area-inset-bottom)); transform:translateX(-50%); z-index:220; background:#1a1a1a; color:#f0f0f0; border:1px solid #717171; border-radius:12px; padding:12px 16px; width:min(90vw,440px); font-size:13px; line-height:1.5; display:none; }
     #quick-rot-btn { left:max(10px,env(safe-area-inset-left)); min-height:36px; }
     #capture-btn { right:max(14px,env(safe-area-inset-right)); }
-    button:focus-visible, select:focus-visible { outline:2px solid #8ddfbe; outline-offset:3px; }
+    button:focus-visible, select:focus-visible { outline:2px solid #dedede; outline-offset:3px; }
     body.screenshot-mode #quick-rot-btn { display:none; }
     @media (orientation:landscape) {
       #hud-bottom { width:min(330px,55vw); }
@@ -255,19 +255,19 @@
       z-index: 95; display: none; align-items: center; gap: 10px; white-space: nowrap;
       box-shadow: 0 4px 16px rgba(0,0,0,0.6);
     }
-    #save-photos-btn { background: #10b981; color: #000; border: none; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 800; cursor: pointer; }
+    #save-photos-btn { background: #dedede; color: #000; border: none; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 800; cursor: pointer; }
     #resume-btn { background: #333; color: #fff; border: 1px solid #666; padding: 4px 9px; border-radius: 12px; font-size: 11px; cursor: pointer; }
-    #menu-handle { top:max(8px,env(safe-area-inset-top));height:44px;width:auto;min-width:112px;gap:7px;padding:0 12px;border:1px solid #6a777b;border-radius:22px;color:#edf3f1;background:rgba(13,20,23,.92);font-size:12px;font-weight:700; }
+    #menu-handle { top:max(8px,env(safe-area-inset-top));height:44px;width:auto;min-width:112px;gap:7px;padding:0 12px;border:1px solid #6a777b;border-radius:22px;color:#f0f0f0;background:rgba(20,20,20,.92);font-size:12px;font-weight:700; }
     #menu-handle::after { content:none; }
     #menu { padding-top:calc(env(safe-area-inset-top,0px) + 66px); }
     #composition-tray { position:fixed;z-index:7;bottom:max(12px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);width:min(700px,calc(100vw - 28px));display:flex;flex-direction:column;align-items:center;gap:6px; }
     #composition-tray[hidden],body.menu-open #composition-tray,body.screenshot-mode #composition-tray { display:none; }
-    #composition-tray-toggle { display:flex;align-items:center;justify-content:center;gap:10px;max-width:100%;min-height:36px;padding:7px 13px;border:1px solid #687c77;border-radius:18px;background:rgba(12,21,23,.94);color:#edf3f1;font-size:12px;font-weight:700; }
-    #active-guide-name { color:#a2b5b1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
-    #composition-shapes { display:flex;gap:6px;overflow-x:auto;width:100%;padding:7px;background:rgba(12,21,23,.94);border:1px solid #475955;border-radius:12px;touch-action:pan-x; }
+    #composition-tray-toggle { display:flex;align-items:center;justify-content:center;gap:10px;max-width:100%;min-height:36px;padding:7px 13px;border:1px solid #747474;border-radius:18px;background:rgba(20,20,20,.94);color:#f0f0f0;font-size:12px;font-weight:700; }
+    #active-guide-name { color:#adadad;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+    #composition-shapes { display:flex;gap:6px;overflow-x:auto;width:100%;padding:7px;background:rgba(20,20,20,.94);border:1px solid #525252;border-radius:12px;touch-action:pan-x; }
     #composition-shapes[hidden] { display:none; }
-    .shape-choice { flex:0 0 86px;min-height:76px;display:flex;flex-direction:column;align-items:center;gap:5px;border:1px solid #52635e;background:#182321;color:#e5eeea;border-radius:7px;padding:5px;font-size:10px;line-height:1.2;cursor:pointer; }
-    .shape-choice[aria-pressed="true"] { border-color:#a4f3cf;background:#274537; }
+    .shape-choice { flex:0 0 86px;min-height:76px;display:flex;flex-direction:column;align-items:center;gap:5px;border:1px solid #5c5c5c;background:#242424;color:#eaeaea;border-radius:7px;padding:5px;font-size:10px;line-height:1.2;cursor:pointer; }
+    .shape-choice[aria-pressed="true"] { border-color:#eeeeee;background:#393939; }
     .shape-choice canvas { width:68px;height:40px; }
     @media(orientation:landscape) and (max-height:500px) { .shape-choice { min-height:62px; }.shape-choice canvas{height:30px;width:52px;} #composition-tray{bottom:max(6px,env(safe-area-inset-bottom));gap:3px;} }
     :root { --safe-left:env(safe-area-inset-left,0px);--safe-right:env(safe-area-inset-right,0px);--safe-bottom:env(safe-area-inset-bottom,0px); }
@@ -275,10 +275,10 @@
     #el-legend .el-row { font-size:11px;line-height:1.1;gap:4px; }
     #el-legend .el-swatch { width:11px;height:10px; }
     body.mode-elzone #capture-btn { top:auto;bottom:max(14px,env(safe-area-inset-bottom));transform:none; }
-    #camera-tools { position:fixed;top:calc(env(safe-area-inset-top,0px) + 60px);left:max(10px,env(safe-area-inset-left));right:max(10px,env(safe-area-inset-right));z-index:10;display:flex;align-items:center;gap:7px;padding:5px 8px;border:1px solid #4e6264;border-radius:9px;background:rgba(12,21,23,.92);color:#dfebe8;font-size:11px; }
-    #exposure-slider { flex:1;min-width:50px;max-width:240px;height:30px;accent-color:#a4efcb; }
+    #camera-tools { position:fixed;top:calc(env(safe-area-inset-top,0px) + 60px);left:max(10px,env(safe-area-inset-left));right:max(10px,env(safe-area-inset-right));z-index:10;display:flex;align-items:center;gap:7px;padding:5px 8px;border:1px solid #4e6264;border-radius:9px;background:rgba(20,20,20,.92);color:#e6e6e6;font-size:11px; }
+    #exposure-slider { flex:1;min-width:50px;max-width:240px;height:30px;accent-color:#d1d1d1; }
     #exposure-value { min-width:29px; }
-    #camera-choice { min-width:70px;max-width:36%;margin-left:auto;min-height:32px;background:#1d2c2c;color:#e7efec;border:1px solid #637a74;border-radius:5px;font-size:11px; }
+    #camera-choice { min-width:70px;max-width:36%;margin-left:auto;min-height:32px;background:#242424;color:#ebebeb;border:1px solid #707070;border-radius:5px;font-size:11px; }
     #zoom-tools { display:flex;align-items:center;gap:3px; } #zoom-tools[hidden] { display:none; } #camera-zoom{width:70px;}
     body.menu-open #camera-tools,body.screenshot-mode #camera-tools {display:none;}
     #sound-overlay { position:fixed;inset:0;z-index:9;background:#0c1419; } #sound-overlay[hidden]{display:none;}
@@ -288,21 +288,21 @@
     body.has-camera-zoom #sound-controls {top:calc(env(safe-area-inset-top,0px) + 148px);}
     body.mode-sound #capture-btn {display:none;}
     @media(max-width:480px) { #camera-tools {flex-wrap:wrap;gap:5px;} #camera-choice{max-width:35%;} #zoom-tools {width:100%;justify-content:flex-end;} #zoom-tools input{width:100px;} }
-    #reference-quick { position:fixed;top:calc(env(safe-area-inset-top,0px) + 112px);left:max(10px,env(safe-area-inset-left));z-index:8;display:flex;align-items:center;gap:8px;max-width:calc(100vw - 20px);padding:6px 10px;background:rgba(12,21,23,.92);border:1px solid #637b73;border-radius:9px;font-size:11px;color:#e7f1ed; }
+    #reference-quick { position:fixed;top:calc(env(safe-area-inset-top,0px) + 112px);left:max(10px,env(safe-area-inset-left));z-index:8;display:flex;align-items:center;gap:8px;max-width:calc(100vw - 20px);padding:6px 10px;background:rgba(20,20,20,.92);border:1px solid #707070;border-radius:9px;font-size:11px;color:#ececec; }
     #reference-quick[hidden],body.menu-open #reference-quick,body.screenshot-mode #reference-quick,body.mode-sound #reference-quick {display:none;}
     #reference-quick label {display:flex;gap:5px;align-items:center;}
-    #reference-quick-opacity {width:min(35vw,170px);height:30px;accent-color:#a4efcb;}
+    #reference-quick-opacity {width:min(35vw,170px);height:30px;accent-color:#d1d1d1;}
     #reference-quick-value {min-width:32px;}
     body.has-camera-zoom #reference-quick {top:calc(env(safe-area-inset-top,0px) + 148px);}
-    #reference-opacity {width:min(45vw,260px);accent-color:#a4efcb;min-height:36px;}
+    #reference-opacity {width:min(45vw,260px);accent-color:#d1d1d1;min-height:36px;}
     #reference-opacity-value {min-width:38px;text-align:right;}
     #camera-tools { display:contents; }
-    #exposure-tools,#zoom-tools { position:fixed;top:max(8px,env(safe-area-inset-top));z-index:10;display:flex;flex-direction:column;gap:0;width:min(128px,calc((100vw - 144px)/2));height:44px;padding:3px 6px;background:rgba(12,21,23,.9);border-radius:9px;border:1px solid #52665e;color:#dfebe8; }
+    #exposure-tools,#zoom-tools { position:fixed;top:max(8px,env(safe-area-inset-top));z-index:10;display:flex;flex-direction:column;gap:0;width:min(128px,calc((100vw - 144px)/2));height:44px;padding:3px 6px;background:rgba(20,20,20,.9);border-radius:9px;border:1px solid #5d5d5d;color:#e6e6e6; }
     #exposure-tools {left:max(8px,env(safe-area-inset-left));} #zoom-tools {right:max(8px,env(safe-area-inset-right));}
     .mini-control-title {display:flex;align-items:center;justify-content:space-between;gap:4px;font-size:9px;line-height:12px;}
-    #exposure-slider,#camera-zoom {width:100%;min-width:0;max-width:100%;height:24px;margin:0;accent-color:#a4efcb;}
-    .zoom-track {position:relative;width:100%;} #zoom-ticks{position:absolute;left:7px;right:7px;bottom:0;height:5px;pointer-events:none;} #zoom-ticks span{position:absolute;width:1px;height:5px;background:#d2e5dd;}
-    #reset-view-btn {position:fixed;z-index:35;top:max(8px,env(safe-area-inset-top));left:calc(50% + 64px);transform:none;width:36px;height:44px;min-height:44px;padding:4px;border:1px solid #627b70;border-radius:16px;background:rgba(12,21,23,.92);color:#e8f1ec;font-size:11px;}
+    #exposure-slider,#camera-zoom {width:100%;min-width:0;max-width:100%;height:24px;margin:0;accent-color:#d1d1d1;}
+    .zoom-track {position:relative;width:100%;} #zoom-ticks{position:absolute;left:7px;right:7px;bottom:0;height:5px;pointer-events:none;} #zoom-ticks span{position:absolute;width:1px;height:5px;background:#dcdcdc;}
+    #reset-view-btn {position:fixed;z-index:35;top:max(8px,env(safe-area-inset-top));left:calc(50% + 64px);transform:none;width:36px;height:44px;min-height:44px;padding:4px;border:1px solid #6f6f6f;border-radius:16px;background:rgba(20,20,20,.92);color:#ececec;font-size:11px;}
     @media(max-width:480px){#menu-handle{min-width:96px;padding:0 8px;}#reset-view-btn{left:calc(50% + 52px);}#exposure-tools,#zoom-tools{box-sizing:border-box;width:calc((100vw - 208px)/2);}}
     #camera-choice{position:static;max-width:58%;min-width:90px;margin:0;}
     #quick-rot-btn {position:static;transform:none!important;align-self:flex-start;min-height:36px;}
@@ -312,28 +312,28 @@
     #sound-target{width:min(100%,320px);accent-color:#e3c083;} #sound-settings{display:flex;flex-direction:column;gap:9px;} #sound-settings[hidden]{display:none;}
     #reference-quick,body.has-camera-zoom #reference-quick {top:calc(env(safe-area-inset-top,0px) + 100px);}
     @media(orientation:landscape){#exposure-tools,#zoom-tools{width:min(155px,calc((100vw - 144px)/2));}}
-    #color-info-toggle {align-self:center;width:36px;height:36px;border:1px solid #8caaa0;border-radius:50%;background:#12201ee6;color:#e5f6ee;font:italic 700 18px Georgia,serif;cursor:pointer;}
-    #color-info-toggle[aria-expanded="true"]{background:#315849;}
-    #hud-bottom > #color-controls {pointer-events:auto;position:absolute;bottom:calc(100% + 8px);left:0;right:0;max-height:48dvh;overflow:auto;padding:14px;background:rgba(12,21,23,.96);border:1px solid #52665e;border-radius:12px;box-sizing:border-box;}
+    #color-info-toggle {align-self:center;width:36px;height:36px;border:1px solid #9d9d9d;border-radius:50%;background:#202020e6;color:#eeeeee;font:italic 700 18px Georgia,serif;cursor:pointer;}
+    #color-info-toggle[aria-expanded="true"]{background:#444444;}
+    #hud-bottom > #color-controls {pointer-events:auto;position:absolute;bottom:calc(100% + 8px);left:0;right:0;max-height:48dvh;overflow:auto;padding:14px;background:rgba(20,20,20,.96);border:1px solid #5d5d5d;border-radius:12px;box-sizing:border-box;}
     body.menu-open #hud-bottom > #color-controls,body.menu-open #color-info-toggle,body.screenshot-mode #color-info-toggle,body.screenshot-mode #hud-bottom > #color-controls {display:none;}
     #color-grouping {width:100%;min-width:0;font-size:14px;min-height:40px;}
     @media(orientation:landscape) {
       #hud-bottom > #color-controls {max-height:calc(100dvh - 160px - env(safe-area-inset-top) - env(safe-area-inset-bottom));gap:6px;padding:10px;}
       #color-controls .drawer-section-title {display:none;}
-      #color-controls label {font-size:14px;color:#edf5f1;}
+      #color-controls label {font-size:14px;color:#f1f1f1;}
       #color-grouping {min-height:36px;padding:6px!important;}
     }
-    #spot-panel {position:fixed;z-index:7;bottom:max(12px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);width:min(390px,calc(100vw - 32px));padding:12px;background:#0c1517eb;border:1px solid #52665e;border-radius:12px;display:flex;flex-direction:column;gap:8px;max-height:55dvh;overflow:auto;}
+    #spot-panel {position:fixed;z-index:7;bottom:max(12px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);width:min(390px,calc(100vw - 32px));padding:12px;background:#181818eb;border:1px solid #5d5d5d;border-radius:12px;display:flex;flex-direction:column;gap:8px;max-height:55dvh;overflow:auto;}
     #spot-panel[hidden],body.menu-open #spot-panel,body.screenshot-mode #spot-panel {display:none;}
-    #spot-reading {font-size:24px;font-weight:700;}#spot-temperature{font-size:14px;color:#cce6da;}
+    #spot-reading {font-size:24px;font-weight:700;}#spot-temperature{font-size:14px;color:#d9d9d9;}
     .spot-settings,.spot-match{display:flex;gap:8px;align-items:end;}.spot-settings label{flex:1;min-width:0;}.spot-settings label,.spot-match label{font-size:12px;display:flex;flex-direction:column;gap:3px;}
-    #spot-panel input{width:100%;min-width:0;background:#1a292b;color:white;border:1px solid #688079;border-radius:5px;padding:7px;font-size:16px;user-select:text;}
-    #spot-panel summary{font-size:12px;padding:6px 0;cursor:pointer;}#spot-panel p{font-size:11px;line-height:1.4;color:#bccbc5;}.spot-match input{max-width:100px;}
+    #spot-panel input{width:100%;min-width:0;background:#242424;color:white;border:1px solid #767676;border-radius:5px;padding:7px;font-size:16px;user-select:text;}
+    #spot-panel summary{font-size:12px;padding:6px 0;cursor:pointer;}#spot-panel p{font-size:11px;line-height:1.4;color:#c4c4c4;}.spot-match input{max-width:100px;}
     body.mode-spot #capture-btn{display:none;}
     @media(orientation:landscape){#spot-panel{left:auto;right:max(12px,env(safe-area-inset-right));transform:none;width:290px;max-height:calc(100dvh - 74px);padding:10px;gap:5px;}#spot-reading{font-size:21px;}}
     #spot-scale{display:flex;gap:3px;overflow-x:auto;flex-shrink:0;padding:4px 0;touch-action:pan-x;}
-    #spot-scale span{min-width:33px;text-align:center;font-size:12px;color:#d0ddd7;padding:7px 3px;border-top:2px solid #566c62;}
-    #spot-scale span.active{border-color:#a4efcb;background:#315849;color:white;border-radius:4px;font-weight:700;}
+    #spot-scale span{min-width:33px;text-align:center;font-size:12px;color:#d7d7d7;padding:7px 3px;border-top:2px solid #616161;}
+    #spot-scale span.active{border-color:#d1d1d1;background:#444444;color:white;border-radius:4px;font-weight:700;}
     /* Readable left-side ZONEZ legend, clear of phone safe areas. */
     #el-legend {left:max(12px,env(safe-area-inset-left));right:auto;padding:9px 10px;gap:4px;max-height:calc(100dvh - 130px);background:rgba(0,0,0,.9);}
     #el-legend {pointer-events:auto;cursor:pointer;touch-action:manipulation;transition:background-color .2s ease,box-shadow .2s ease;}
@@ -348,14 +348,14 @@
     #el-legend .el-row small {font-size:10px;}
     #el-legend .el-swatch {height:65%;max-height:30px;min-height:8px;}
     #el-legend {height:min(300px,calc(100dvh - 180px));max-height:calc(100dvh - 180px);}
-    #zone-map-toggle {position:fixed;z-index:5;left:max(12px,env(safe-area-inset-left));top:calc(50% + 25px + min(150px,calc((100dvh - 180px)/2)) + 8px);width:116px;min-height:36px;display:flex;justify-content:space-around;align-items:center;padding:4px;border:1px solid #687c77;border-radius:8px;background:rgba(0,0,0,.9);color:white;cursor:pointer;touch-action:manipulation;font-size:15px;}
+    #zone-map-toggle {position:fixed;z-index:5;left:max(12px,env(safe-area-inset-left));top:calc(50% + 25px + min(150px,calc((100dvh - 180px)/2)) + 8px);width:116px;min-height:36px;display:flex;justify-content:space-around;align-items:center;padding:4px;border:1px solid #747474;border-radius:8px;background:rgba(0,0,0,.9);color:white;cursor:pointer;touch-action:manipulation;font-size:15px;}
     #zone-map-toggle[hidden] {display:none;}
     #zone-map-toggle span {padding:3px 7px;border-radius:4px;color:#9da9ad;}
     #zone-map-toggle span.active {background:#2563eb;color:white;font-weight:800;}
     #zone-map-toggle:focus-visible {outline:2px solid #facc15;outline-offset:3px;}
     body.screenshot-mode #zone-map-toggle {display:none;}
-    #camera-facing-tools {position:fixed;top:calc(max(8px,env(safe-area-inset-top)) + 49px);left:50%;transform:translateX(-50%);display:flex;gap:3px;z-index:10;padding:3px;border:1px solid #52665e;border-radius:8px;background:rgba(0,0,0,.85);}
-    #camera-facing-tools button {background:none;border:0;color:#a9b8b6;padding:5px 12px;min-height:30px;min-width:54px;border-radius:5px;font-size:12px;cursor:pointer;}
+    #camera-facing-tools {position:fixed;top:calc(max(8px,env(safe-area-inset-top)) + 49px);left:50%;transform:translateX(-50%);display:flex;gap:3px;z-index:10;padding:3px;border:1px solid #5d5d5d;border-radius:8px;background:rgba(0,0,0,.85);}
+    #camera-facing-tools button {background:none;border:0;color:#b2b2b2;padding:5px 12px;min-height:30px;min-width:54px;border-radius:5px;font-size:12px;cursor:pointer;}
     #camera-facing-tools button[aria-pressed="true"] {background:#263c3d;color:#fff;font-weight:800;}
     body.menu-open #camera-facing-tools,body.mode-sound #camera-facing-tools,body.screenshot-mode #camera-facing-tools {display:none;}
     @media(max-width:600px),(max-height:500px){
@@ -374,8 +374,8 @@
     #meter-top-actions {position:fixed;top:max(8px,env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:35;display:flex;gap:3px;align-items:center;}
     #meter-top-actions #menu-handle {position:static;transform:none;left:auto;top:auto;min-width:100px;}
     #meter-top-actions #camera-facing-tools {position:static;transform:none;left:auto;top:auto;padding:0;border:0;background:none;gap:2px;display:flex;}
-    #meter-top-actions #camera-facing-tools button {width:29px;min-width:29px;min-height:40px;padding:3px;display:flex;align-items:center;justify-content:center;border:1px solid #52665e;border-radius:7px;background:rgba(12,21,23,.94);color:#d3e3df;}
-    #meter-top-actions #camera-facing-tools button[aria-pressed="true"] {background:#315057;border-color:#b5d5d2;color:white;}
+    #meter-top-actions #camera-facing-tools button {width:29px;min-width:29px;min-height:40px;padding:3px;display:flex;align-items:center;justify-content:center;border:1px solid #5d5d5d;border-radius:7px;background:rgba(20,20,20,.94);color:#dcdcdc;}
+    #meter-top-actions #camera-facing-tools button[aria-pressed="true"] {background:#444444;border-color:#dddddd;color:white;}
     #meter-top-actions #reset-view-btn {position:static;left:auto;top:auto;width:30px;min-width:30px;transform:none;}
     body.mode-sound #meter-top-actions #camera-facing-tools {display:none;}
     body.screenshot-mode #meter-top-actions {display:none;}
@@ -385,7 +385,7 @@
       #meter-top-actions #camera-facing-tools button {width:26px;min-width:26px;min-height:36px;padding:2px;}
       #meter-top-actions #reset-view-btn {width:27px;min-width:27px;}
     }
-    #meter-top-actions #camera-flip-btn {width:32px;min-width:32px;height:40px;padding:4px;display:flex;align-items:center;justify-content:center;border:1px solid #52665e;border-radius:8px;background:rgba(12,21,23,.94);color:#e3efeb;cursor:pointer;}
+    #meter-top-actions #camera-flip-btn {width:32px;min-width:32px;height:40px;padding:4px;display:flex;align-items:center;justify-content:center;border:1px solid #5d5d5d;border-radius:8px;background:rgba(20,20,20,.94);color:#eaeaea;cursor:pointer;}
     body.mode-sound #meter-top-actions #camera-flip-btn {display:none;}
     @media(max-width:480px){#meter-top-actions #camera-flip-btn{width:28px;min-width:28px;height:36px;padding:3px;}}
     /* Let menu choices use the available width rather than squeezing labels. */
@@ -405,19 +405,19 @@
     #spot-panel {left:50%;right:auto;top:auto;bottom:max(8px,env(safe-area-inset-bottom));transform:translateX(-50%);width:min(1040px,calc(100vw - 20px));max-height:65dvh;padding:9px 10px;gap:6px;border-radius:10px;}
     .spot-live-readings {display:flex;align-items:center;justify-content:space-between;gap:10px;}
     #spot-reading {display:block;font-size:27px;line-height:1.1;font-weight:850;}
-    #spot-offset {display:block;font-size:10px;color:#c1d0cb;}
-    .spot-kelvin {text-align:right;}.spot-kelvin small{display:block;font-size:9px;color:#b9c9c4;}
+    #spot-offset {display:block;font-size:10px;color:#c9c9c9;}
+    .spot-kelvin {text-align:right;}.spot-kelvin small{display:block;font-size:9px;color:#c2c2c2;}
     #spot-temperature {font-size:30px;line-height:1.1;font-weight:850;}
     .spot-control-rows {display:flex;flex-wrap:wrap;gap:7px;align-items:end;}
     .spot-settings {flex:1;min-width:190px;gap:6px;}
-    #spot-panel label {font-size:10px;color:#c5d5cf;display:flex;flex-direction:column;gap:3px;}
+    #spot-panel label {font-size:10px;color:#cecece;display:flex;flex-direction:column;gap:3px;}
     #spot-panel input,#spot-panel select {font-size:16px;padding:5px;min-height:30px;box-sizing:border-box;}
-    #spot-panel select {background:#1a292b;color:white;border:1px solid #688079;border-radius:5px;}
+    #spot-panel select {background:#242424;color:white;border:1px solid #767676;border-radius:5px;}
     .spot-match-row {flex:2;display:flex;align-items:end;gap:6px;min-width:300px;}
     .spot-stop-entry {display:flex;gap:4px;}#spot-known-f {width:66px;}#spot-notation {width:42px;}
     #spot-panel .spot-match-row button {min-height:32px;padding:6px 8px;font-size:11px;white-space:nowrap;}
     .spot-known-light {flex:1;min-width:80px;}#spot-known-light{max-width:130px;}#spot-light-unit {width:56px;}
-    #spot-light-reading {font-size:12px;color:#d5e2dc;}#spot-note {font-size:10px;line-height:1.3;}
+    #spot-light-reading {font-size:12px;color:#dcdcdc;}#spot-note {font-size:10px;line-height:1.3;}
     #spot-scale {padding:2px 0;}.spot-settings input {width:100%;}
     @media(max-width:600px){
       .spot-control-rows {display:grid;grid-template-columns:1fr;gap:5px;}
@@ -425,6 +425,27 @@
       .spot-known-light {grid-column:span 2;}#spot-known-light{max-width:none;width:100%;}#spot-light-unit{width:100%;}
       #spot-panel {padding:8px;}.spot-settings {min-width:0;}
     }
+
+    /* Bottom Controls, with space for every mode's readouts above it. */
+    #meter-top-actions {top:auto;bottom:max(8px,env(safe-area-inset-bottom));}
+    #menu {transform:translateY(100%);padding-top:max(16px,env(safe-area-inset-top));padding-bottom:calc(76px + env(safe-area-inset-bottom));}
+    #menu.open {transform:translateY(0);}
+    #hud-bottom,#ratio-hud,#composition-tray {bottom:calc(64px + env(safe-area-inset-bottom));}
+    #spot-panel {bottom:calc(60px + env(safe-area-inset-bottom));max-height:calc(100dvh - 142px - env(safe-area-inset-top) - env(safe-area-inset-bottom));}
+    #spot-temperature {font-size:36px;}
+    #exposure-tools,#zoom-tools {width:min(155px,calc((100vw - 40px)/2));}
+    #lens-choices {position:fixed;top:calc(62px + env(safe-area-inset-top));right:max(8px,env(safe-area-inset-right));z-index:10;display:flex;gap:4px;max-width:calc(100vw - 16px);overflow-x:auto;}
+    #lens-choices[hidden],body.menu-open #lens-choices,body.mode-sound #lens-choices,body.screenshot-mode #lens-choices {display:none;}
+    #lens-choices button {font-size:10px;white-space:nowrap;max-width:150px;overflow:hidden;text-overflow:ellipsis;padding:6px 8px;border-radius:8px;background:#202020e8;color:#ddd;border:1px solid #666;}
+    #lens-choices button[aria-pressed="true"] {background:#eee;color:#111;border-color:#fff;font-weight:800;}
+    #composition-display-quick {max-width:100%;padding:7px;background:#222;color:#eee;border:1px solid #777;border-radius:7px;font-size:12px;}
+    #menu .rotation-choices {display:flex;flex-wrap:wrap;gap:6px;}
+    #menu .rotation-choices .mode-tab {flex:0 0 auto;min-height:34px;padding:7px 10px;font-size:11px;}
+    #freeze-controls {padding:10px;border:1px solid #555;border-radius:8px;display:flex;flex-direction:column;gap:8px;}
+    #freeze-blend-controls[hidden],#freeze-quick[hidden],body.menu-open #freeze-quick,body.screenshot-mode #freeze-quick {display:none;}
+    #freeze-opacity {width:100%;accent-color:#d1d1d1;min-height:30px;}
+    #freeze-quick {position:fixed;z-index:11;top:calc(144px + env(safe-area-inset-top));left:max(8px,env(safe-area-inset-left));display:flex;align-items:center;gap:6px;background:#181818ed;color:#eee;border:1px solid #777;border-radius:8px;padding:5px 8px;font-size:11px;}
+    #freeze-quick-opacity {width:min(35vw,150px);accent-color:#d1d1d1;}
   </style>
 </head>
 <body>
@@ -448,11 +469,12 @@
   </div>
   <button id="reset-view-btn" aria-label="Reset to 60/30/10" title="Reset to clean 60/30/10 feed">↺</button>
   <button type="button" id="camera-flip-btn" aria-label="Flip camera" title="Switch to front camera" data-facing="environment"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h5l2-3h4l2 3h5v13H3Z"/><path d="M7 12h9l-2-2m3 6H8l2 2"/></svg></button>
+  <div id="freeze-quick" hidden><label for="freeze-quick-opacity">Freeze / live</label><input id="freeze-quick-opacity" type="range" min="0" max="100" value="100" aria-label="Live frozen frame dissolve"><output id="freeze-quick-value">100%</output></div>
   <div id="reference-quick" hidden>
     <label><input type="checkbox" id="reference-quick-enabled" checked> Reference</label>
     <input type="range" id="reference-quick-opacity" min="0" max="100" step="1" value="40" aria-label="Live reference opacity"><output id="reference-quick-value">40%</output>
   </div>
-  <section id="sound-overlay" hidden aria-label="Sound level graph">
+  <section id="sound-overlay" hidden aria-label="ROOM TONE level graph">
     <canvas id="sound-canvas" aria-label="Relative microphone level history"></canvas>
     <div id="sound-controls"><button class="ui-btn" id="sound-start">Enable microphone</button><button class="ui-btn" id="sound-record" disabled>Record</button><button class="ui-btn" id="sound-save" disabled>Save audio</button><span id="sound-status" role="status">Microphone off</span></div>
   </section>
@@ -479,13 +501,17 @@
   <button id="menu-handle" title="Open controls" aria-label="Open controls" aria-expanded="false"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M7 4.5 16 6 20 13 15 20 7 18 3 11 7 4.5M7 4.5 7 13 15 13M16 6 11 14M20 13 11 8M15 20 16 11M7 18 12 10M3 11 13 17"/></svg><span id="menu-button-label">Controls</span></button>
 
   <div id="menu">
+    <section id="freeze-controls">
+      <div class="menu-row"><label for="freeze-toggle">Freeze frame</label><input type="checkbox" id="freeze-toggle"></div>
+      <div id="freeze-blend-controls" hidden><label for="freeze-opacity">Frozen frame over live camera <output id="freeze-opacity-value">100%</output></label><input type="range" id="freeze-opacity" min="0" max="100" value="100" aria-label="Frozen frame dissolve"><p class="control-help">0% live camera · 50% blend · 100% frozen. Measurements stay on the frozen frame.</p></div>
+    </section>
     <div class="drawer-section-title">Active Feature (One at a Time)</div>
     <div class="mode-tabs feature-choices">
       <button class="mode-tab active" data-mode="color">1. COLOR (60-30-10)</button>
       <button class="mode-tab" data-mode="ratios">2. RATIOS (3x)</button>
       <button class="mode-tab" data-mode="elzone">3. ZONEZ</button>
       <button class="mode-tab" data-mode="composition">4. COMPOSITION</button>
-      <button class="mode-tab" data-mode="sound">5. SOUND</button>
+      <button class="mode-tab" data-mode="sound">5. ROOM TONE</button>
       <button class="mode-tab" data-mode="spot">6. SPOT METER</button>
     </div>
 
@@ -493,8 +519,8 @@
       <div class="drawer-section-title">ZONEZ</div>
       <div class="menu-row"><label for="zone-map-size">Stop map</label><select id="zone-map-size" aria-label="ZONEZ map size" class="ui-select"><option value="9">9 stops · −4 to +4</option><option value="7">7 stops · −3 to +3</option><option value="5">5 stops · −2 to +2</option><option value="3">3 stops · adjustable</option></select></div>
       <section id="zone-three-controls" hidden>
-        <div class="menu-row"><label for="zone-under-boundary">Under gray · stops below</label><input type="number" id="zone-under-boundary" aria-label="Under middle gray boundary" min="0.01" step="any" value="1" style="width:75px;padding:7px;background:#152021;color:white;border:1px solid #687b73"></div>
-        <div class="menu-row"><label for="zone-over-boundary">Over gray · stops above</label><input type="number" id="zone-over-boundary" aria-label="Over middle gray boundary" min="0.01" step="any" value="1" style="width:75px;padding:7px;background:#152021;color:white;border:1px solid #687b73"></div>
+        <div class="menu-row"><label for="zone-under-boundary">Under gray · stops below</label><input type="number" id="zone-under-boundary" aria-label="Under middle gray boundary" min="0.01" step="any" value="1" style="width:75px;padding:7px;background:#242424;color:white;border:1px solid #707070"></div>
+        <div class="menu-row"><label for="zone-over-boundary">Over gray · stops above</label><input type="number" id="zone-over-boundary" aria-label="Over middle gray boundary" min="0.01" step="any" value="1" style="width:75px;padding:7px;background:#242424;color:white;border:1px solid #707070"></div>
         <p class="control-help">Three bands: at/below the under boundary, middle, and at/above the over boundary. Default ±1 stop from 18% gray. Set either distance independently, including fractional stops.</p>
       </section>
       <div class="menu-row"><label for="zone-overlay-strength">Colour overlay</label><select id="zone-overlay-strength" aria-label="ZONEZ overlay strength" class="ui-select"><option value="0">0%</option><option value="35">35%</option><option value="50">50%</option><option value="75" selected>75%</option><option value="100">100%</option></select></div>
@@ -502,7 +528,7 @@
     </section>
     <div class="drawer-section-title">Screen orientation</div>
   <button id="quick-rot-btn" title="Enter full screen" aria-label="Enter full screen">⛶ Full screen</button>
-    <div class="mode-tabs" style="grid-template-columns: repeat(2, 1fr);">
+    <div class="rotation-choices">
       <button class="mode-tab active" id="layout-vert-btn">Auto rotate</button>
       <button class="mode-tab" id="layout-land-btn">Landscape full screen</button>
     </div>
@@ -512,9 +538,8 @@
       <label for="composition-guide">Guide</label>
       <select id="composition-guide" class="ui-select"></select>
       <p id="guide-instruction" class="control-help"></p>
-      <div class="menu-row"><label for="guide-visible">Always show composition overlay</label><input type="checkbox" id="guide-visible"></div>
-      <div class="menu-row"><label for="guide-glow">Soft alignment glow</label><input type="checkbox" id="guide-glow" checked></div>
-      <p class="control-help">Clean picture by default. The selected guide appears softly only when nearby scene lines or focal points align. Turn on Always show for a permanent guide, or switch both off for no guides.</p>
+      <div class="menu-row"><label for="composition-display">Show shape</label><select id="composition-display" class="ui-select"><option value="align">Appear on alignment</option><option value="always">Always on</option><option value="off">Off</option></select></div><input type="checkbox" id="guide-visible" hidden><input type="checkbox" id="guide-glow" checked hidden>
+      <p class="control-help">Choose Appear on alignment for a soft glow as the shot lines up, Always on for a permanent shape, or Off for a clean picture.</p>
       <label class="control-help" for="guide-threshold">Alignment tolerance</label>
       <select class="ui-select" id="guide-threshold"><option value="0.48">Forgiving</option><option value="0.55" selected>Moderate</option><option value="0.62">Balanced</option><option value="0.75">Precise</option></select>
       <div id="composition-legend" role="group" aria-label="Choose a composition to replicate"></div>
@@ -568,10 +593,7 @@
       <input type="checkbox" id="grid-toggle">
     </div>
 
-    <div class="menu-row">
-      <span>Freeze Live Measurement</span>
-      <input type="checkbox" id="freeze-toggle">
-    </div>
+
 
     <div class="menu-row">
       <span>App Cache</span>
@@ -584,6 +606,7 @@
   </div>
 
   <div id="composition-tray" hidden>
+    <select id="composition-display-quick" aria-label="Composition shape display"><option value="align">Appear on alignment</option><option value="always">Always on</option><option value="off">Off</option></select>
     <button id="composition-tray-toggle" aria-expanded="true" aria-controls="composition-shapes">◇ Hide shapes <span id="active-guide-name">Rule of thirds</span></button>
     <div id="composition-shapes" role="group" aria-label="Composition shapes"></div>
   </div>
@@ -671,7 +694,7 @@
     </div>
   </div>
 
-  <script src="meter-runtime.js?v=34"></script>
+  <script src="meter-runtime.js?v=35"></script>
   <script>
     const video = document.getElementById('video');
     const viewCanvas = document.getElementById('view-canvas');
@@ -769,6 +792,12 @@
     });
     document.getElementById('layout-land-btn').addEventListener('click',()=>{menu.classList.remove('open');enterImmersive(true);});
 
+    function setCompositionDisplay(value){
+      document.getElementById('guide-visible').checked=value==='always';
+      document.getElementById('guide-glow').checked=value==='align';
+      for(const id of ['composition-display','composition-display-quick'])document.getElementById(id).value=value;
+    }
+    for(const id of ['composition-display','composition-display-quick'])document.getElementById(id).addEventListener('change',e=>setCompositionDisplay(e.target.value));
     const guideSelect=document.getElementById('composition-guide');
     for(const [id,label] of Object.entries(SCOUT_GUIDES)){const option=document.createElement('option');option.value=id;option.textContent=label;guideSelect.append(option);}
     let guideTurn=0,guideMirror=false,guideGeometry=scoutGuideGeometry(guideSelect.value);
@@ -925,6 +954,7 @@
     window.visualViewport?.addEventListener('resize',syncCanvasDimensions);
     syncCanvasDimensions();
 
+    const lensChoices=document.createElement('div');lensChoices.id='lens-choices';lensChoices.hidden=true;lensChoices.setAttribute('role','group');lensChoices.setAttribute('aria-label','Mobile camera lenses');document.body.append(lensChoices);
     async function refreshCameras(){
       try{
         const devices=(await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='videoinput');
@@ -932,6 +962,9 @@
         devices.forEach((d,i)=>{const option=document.createElement('option');option.value=d.deviceId;option.textContent=d.label||`Camera ${i+1}`;cameraChoice.append(option);});
         if(!devices.length){const option=document.createElement('option');option.value='';option.textContent='Default camera';cameraChoice.append(option);}
         cameraChoice.value=selectedCamera;cameraChoice.disabled=devices.length<2;
+        lensChoices.replaceChildren();lensChoices.hidden=devices.length<2;
+        const activeId=cameraTrack?.getSettings?.().deviceId||selectedCamera;
+        devices.forEach((d,i)=>{const button=document.createElement('button');button.type='button';button.textContent=d.label||`Camera ${i+1}`;button.title=button.textContent;button.setAttribute('aria-pressed',String(d.deviceId===activeId));button.addEventListener('click',()=>{cameraChoice.value=d.deviceId;cameraChoice.dispatchEvent(new Event('change'));});lensChoices.append(button);});
         cameraChoice.title=devices.length<2?'This browser exposes one camera. Other physical lenses may not be separately available.':'Cameras made available by this browser';
       }catch{cameraChoice.title='Camera list unavailable until permission is granted';}
     }
@@ -944,11 +977,11 @@
       document.getElementById('exposure-label').textContent=hardwareExposure?'Camera EV':'Preview EV';document.getElementById('exposure-value').textContent=Number(exposureSlider.value).toFixed(1);
       exposureSlider.title=hardwareExposure?'Camera exposure compensation':'Preview simulation; this browser does not expose hardware exposure compensation';
       const zoom=capabilities.zoom;hardwareZoom=!!zoom;previewZoom=1;
-      const slider=document.getElementById('camera-zoom');slider.min=zoom?zoom.min:1;slider.max=zoom?Math.max(zoom.min,Math.min(3,zoom.max)):3;slider.step=zoom?(zoom.step||.1):.1;slider.value=zoom?(settings.zoom||zoom.min):1;
-      slider.title=zoom?'Zoom supported by this camera':'Preview crop zoom. This browser does not expose hardware zoom.';
+      const slider=document.getElementById('camera-zoom');slider.min=zoom?zoom.min:1;slider.max=zoom?Math.max(zoom.min,zoom.max):3;slider.step=zoom?(zoom.step||.1):.1;slider.value=zoom?(settings.zoom||zoom.min):1;
+      slider.title=zoom?'Full camera zoom range: '+zoom.min+'× to '+zoom.max+'×':'Preview crop zoom. This browser does not expose hardware zoom.';
       document.getElementById('zoom-value').textContent=Number(slider.value).toFixed(1)+'×';
       const min=Number(slider.min),max=Number(slider.max),ticks=document.getElementById('zoom-ticks');ticks.replaceChildren();
-      const marks=min<=.5&&max>=3?[.5,1,2,3]:min===1&&max>=3?[1,1.5,2,3]:Array.from({length:4},(_,i)=>min+(max-min)*i/3);
+      const marks=Array.from(new Set([min,...[.5,1,2,3,5,10].filter(v=>v>min&&v<max),max]));
       marks.forEach(value=>{const tick=document.createElement('span');tick.style.left=(max>min?100*(value-min)/(max-min):0)+'%';tick.title=value.toFixed(1)+'×';ticks.append(tick);});
       const facing=settings.facingMode;if(facing==='user'||facing==='environment')facingMode=facing;
 
@@ -976,7 +1009,7 @@
     }
     function selectCameraSide(side){
       if(isScreenshotMode)exitScreenshotMode();
-      isFrozen=false;document.getElementById('freeze-toggle').checked=false;
+      isFrozen=false;document.getElementById('freeze-toggle').checked=false;syncFreezeControls();
       uploadedImg=null;fileInput.value='';selectedCamera='';facingMode=side;
       document.getElementById('live-btn').style.display='none';syncCameraFacingButtons();startCamera();
     }
@@ -1006,15 +1039,15 @@
       const open=menu.classList.contains('open');document.body.classList.toggle('menu-open',open);handle.setAttribute('aria-expanded',String(open));handle.setAttribute('aria-label',open?'Return to camera':'Open controls');handle.title=open?'Return to camera':'Open controls';document.getElementById('menu-button-label').textContent=open?'Camera':'Controls';
     }
     new MutationObserver(syncMenuButton).observe(menu,{attributes:true,attributeFilter:['class']});syncMenuButton();
-    handle.addEventListener('click', () => {menu.classList.toggle('open');handle.setAttribute('aria-expanded',String(menu.classList.contains('open')));});
+    handle.addEventListener('click', () => {menu.classList.toggle('open');if(menu.classList.contains('open'))menu.scrollTop=0;handle.setAttribute('aria-expanded',String(menu.classList.contains('open')));});
     document.getElementById('close-menu-btn').addEventListener('click', () => menu.classList.remove('open'));
 
     let touchStartY = 0;
     window.addEventListener('touchstart', e => { touchStartY = e.touches[0].clientY; }, { passive: true });
     window.addEventListener('touchend', e => {
       const dy = e.changedTouches[0].clientY - touchStartY;
-      if (touchStartY < 80 && dy > 45) menu.classList.add('open');
-      else if (menu.classList.contains('open') && touchStartY < 80 && dy < -45) menu.classList.remove('open');
+      if (!menu.classList.contains('open') && touchStartY > innerHeight-80 && dy < -45){menu.classList.add('open');menu.scrollTop=0;}
+      else if (menu.classList.contains('open') && touchStartY > innerHeight-80 && dy > 45) menu.classList.remove('open');
     }, { passive: true });
 
     const referenceInput=document.getElementById('reference-input');
@@ -1051,7 +1084,7 @@
         img.onload = () => {
           uploadedImg = img;hardwareZoom=false;previewZoom=1;document.getElementById('camera-zoom').min=1;document.getElementById('camera-zoom').max=3;document.getElementById('camera-zoom').value=1;document.getElementById('zoom-value').textContent='1.0×';hardwareExposure=false;document.getElementById('exposure-label').textContent='Preview EV';exposureSlider.min=-2;exposureSlider.max=2;exposureSlider.step=.1;
           isFrozen = false;
-          document.getElementById('freeze-toggle').checked = false;
+          document.getElementById('freeze-toggle').checked = false;syncFreezeControls();
           document.getElementById('live-btn').style.display = 'inline-block';
           menu.classList.remove('open');
         };
@@ -1087,9 +1120,18 @@
     document.getElementById('grid-toggle').addEventListener('change', e => {
       document.getElementById('grid').style.display = e.target.checked && activeMode !== 'composition' ? 'block' : 'none';
     });
-    document.getElementById('freeze-toggle').addEventListener('change', e => {
-      isFrozen = e.target.checked;
-    });
+    function syncFreezeControls(){
+      const frozen=document.getElementById('freeze-toggle').checked;
+      document.getElementById('freeze-blend-controls').hidden=!frozen;
+      document.getElementById('freeze-quick').hidden=!frozen;
+      const value=document.getElementById('freeze-opacity').value;
+      document.getElementById('freeze-quick-opacity').value=value;
+      document.getElementById('freeze-opacity-value').textContent=value+'%';document.getElementById('freeze-quick-value').textContent=value+'%';
+    }
+    document.getElementById('freeze-toggle').addEventListener('change', e => {isFrozen=e.target.checked;syncFreezeControls();});
+    document.getElementById('freeze-opacity').addEventListener('input',syncFreezeControls);
+    document.getElementById('freeze-quick-opacity').addEventListener('input',e=>{document.getElementById('freeze-opacity').value=e.target.value;syncFreezeControls();});
+    const freezeLiveCanvas=document.createElement('canvas'),freezeLiveCtx=freezeLiveCanvas.getContext('2d',{willReadFrequently:true});
 
     function updateRatioHudText() {
       const n = ratioNodes.length;
@@ -1517,7 +1559,7 @@
       });
     }
 
-    function drawSourceCover(source, sw, sh) {
+    function drawSourceCover(source, sw, sh, targetCtx=rawCtx) {
       if (!sw || !sh) return false;
       const cw = rawCanvas.width, ch = rawCanvas.height;
       const targetAspect = cw / ch;
@@ -1532,9 +1574,9 @@
         sy = Math.round((sh - sHeight) / 2);
       }
       if(previewZoom>1){const oldW=sWidth,oldH=sHeight;sWidth/=previewZoom;sHeight/=previewZoom;sx+=(oldW-sWidth)/2;sy+=(oldH-sHeight)/2;}
-      rawCtx.drawImage(source, sx, sy, sWidth, sHeight, 0, 0, cw, ch);
-      if(activeMode==='spot'&&!isFrozen&&frameCount%8===0)spotMeter.measure(rawCtx,cw,ch);
-      if(previewEV!==0){const image=rawCtx.getImageData(0,0,cw,ch),data=image.data;for(let i=0;i<data.length;i+=4){data[i]=previewLut[data[i]];data[i+1]=previewLut[data[i+1]];data[i+2]=previewLut[data[i+2]];}rawCtx.putImageData(image,0,0);}
+      targetCtx.drawImage(source, sx, sy, sWidth, sHeight, 0, 0, cw, ch);
+      if(targetCtx===rawCtx&&activeMode==='spot'&&!isFrozen&&frameCount%8===0)spotMeter.measure(rawCtx,cw,ch);
+      if(previewEV!==0){const image=targetCtx.getImageData(0,0,cw,ch),data=image.data;for(let i=0;i<data.length;i+=4){data[i]=previewLut[data[i]];data[i+1]=previewLut[data[i+1]];data[i+2]=previewLut[data[i+2]];}targetCtx.putImageData(image,0,0);}
       return true;
     }
 
@@ -1556,6 +1598,7 @@
 
     function renderLoop() {
       if(activeMode==='sound'){requestAnimationFrame(renderLoop);return;}
+      if(activeMode==='spot'&&!menu.classList.contains('open')){const limit=document.getElementById('spot-panel').getBoundingClientRect().top-22;if(limit>50)spotMeter.y=Math.min(spotMeter.y,limit/viewCanvas.height);}
       let hasFrame = false;
       if (!isFrozen) {
         if (uploadedImg) {
@@ -1582,6 +1625,14 @@
           viewCtx.drawImage(rawCanvas, 0, 0);
         }
 
+        if(isFrozen&&!isScreenshotMode&&document.getElementById('freeze-toggle').checked&&video.readyState>=2){
+          const opacity=Number(document.getElementById('freeze-opacity').value)/100;
+          if(opacity<1){
+            if(freezeLiveCanvas.width!==rawCanvas.width||freezeLiveCanvas.height!==rawCanvas.height){freezeLiveCanvas.width=rawCanvas.width;freezeLiveCanvas.height=rawCanvas.height;}
+            drawSourceCover(video,video.videoWidth,video.videoHeight,freezeLiveCtx);
+            viewCtx.save();viewCtx.globalAlpha=1-opacity;viewCtx.drawImage(freezeLiveCanvas,0,0);viewCtx.restore();
+          }
+        }
         drawReferenceOverlay(viewCtx,viewCanvas.width,viewCanvas.height);
         if(activeMode==='spot')spotMeter.draw(viewCtx,viewCanvas.width,viewCanvas.height);
         if (activeMode === 'composition') {
@@ -1677,7 +1728,7 @@
 
     function resetToColorFeed(){
       document.getElementById('grid-toggle').checked=false;
-      document.getElementById('freeze-toggle').checked=false;
+      document.getElementById('freeze-toggle').checked=false;syncFreezeControls();
       isFrozen=false;
       ratioNodes=[];ratioEdges=[];draggingNodeIndex=-1;
       updateRatioHudText();
@@ -1695,7 +1746,7 @@
 
     // A refresh returns to the original clean colour feed, never a measurement overlay.
     document.getElementById('grid-toggle').checked=false;
-    document.getElementById('freeze-toggle').checked=false;
+    document.getElementById('freeze-toggle').checked=false;syncFreezeControls();
     isFrozen=false;
     setMode('color');
     try{

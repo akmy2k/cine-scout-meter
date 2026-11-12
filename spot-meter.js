@@ -14,7 +14,7 @@ function cineSpotScale(f){return {value:Math.max(1,Math.min(128,f)),index:Math.m
 const CINE_LUX_PER_FC=1/.09290304;
 function cineKelvinColour(k){
   const ramp=[[2000,[255,143,62]],[3200,[255,191,126]],[4500,[255,226,190]],[6500,[224,237,255]],[10000,[128,175,255]]];
-  if(!Number.isFinite(k))return '#bdccc5';
+  if(!Number.isFinite(k))return '#c5c5c5';
   let low=ramp[0],high=ramp[ramp.length-1];
   for(let i=1;i<ramp.length;i++)if(k<=ramp[i][0]){low=ramp[i-1];high=ramp[i];break;}
   const t=Math.max(0,Math.min(1,(k-low[0])/(high[0]-low[0])));
@@ -78,10 +78,10 @@ class CineSpotMeter{
   }
   draw(ctx,w,h){
     const x=this.x*w,y=this.y*h,r=Math.min(w,h)*.025;
-    ctx.save();ctx.strokeStyle='#000';ctx.lineWidth=4;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.stroke();ctx.strokeStyle='#e9f7ee';ctx.lineWidth=1.5;ctx.stroke();ctx.beginPath();ctx.moveTo(x-r-6,y);ctx.lineTo(x+r+6,y);ctx.moveTo(x,y-r-6);ctx.lineTo(x,y+r+6);ctx.stroke();
+    ctx.save();ctx.strokeStyle='#000';ctx.lineWidth=4;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.stroke();ctx.strokeStyle='#f3f3f3';ctx.lineWidth=1.5;ctx.stroke();ctx.beginPath();ctx.moveTo(x-r-6,y);ctx.lineTo(x+r+6,y);ctx.moveTo(x,y-r-6);ctx.lineTo(x,y+r+6);ctx.stroke();
     const label=this.shortReading||'f(—)';ctx.font='800 '+Math.max(14,Math.min(20,Math.min(w,h)*.036))+'px -apple-system,sans-serif';
     const width=ctx.measureText(label).width+14,height=29;
     let left=x+r+10;if(left+width>w-5)left=x-r-10-width;left=Math.max(5,Math.min(w-width-5,left));const top=Math.max(5,Math.min(h-height-5,y-height/2));
-    ctx.fillStyle='rgba(3,12,9,.9)';ctx.beginPath();ctx.roundRect(left,top,width,height,6);ctx.fill();ctx.fillStyle='#f1fff8';ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText(label,left+7,top+height/2);ctx.restore();
+    ctx.fillStyle='rgba(12,12,12,.9)';ctx.beginPath();ctx.roundRect(left,top,width,height,6);ctx.fill();ctx.fillStyle='#ffffff';ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText(label,left+7,top+height/2);ctx.restore();
   }
 }

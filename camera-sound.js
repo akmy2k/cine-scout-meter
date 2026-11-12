@@ -93,7 +93,7 @@ class ScoutSoundMeter {
       ctx.textAlign='left';ctx.fillStyle='#b4f4d5';ctx.font='700 30px -apple-system, sans-serif';ctx.fillText(`${this.levels.rms.toFixed(1)} dBFS`,left,top-38);
       ctx.font='13px -apple-system, sans-serif';ctx.fillStyle=this.levels.peak>=-.5?'#ff9c81':'#d5e4e8';ctx.fillText(`Peak ${this.levels.peak.toFixed(1)} dBFS${this.levels.peak>=-.5?' · CLIPPING':''}`,left,top-12);
       ctx.strokeStyle='#a5edcd';ctx.lineWidth=2;ctx.beginPath();this.history.forEach((p,i)=>{const x=right-(now-p.time)/30000*(right-left),y=bottom-(p.value+90)/90*plotH;i?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.stroke();
-    }else{ctx.textAlign='left';ctx.fillStyle='#d5e4e8';ctx.font='16px -apple-system,sans-serif';ctx.fillText('Enable microphone to measure sound',left,top-25);}
+    }else{ctx.textAlign='left';ctx.fillStyle='#d5e4e8';ctx.font='16px -apple-system,sans-serif';ctx.fillText('Enable microphone to measure ROOM TONE',left,top-25);}
     ctx.font='12px -apple-system,sans-serif';ctx.fillStyle='#a4b7be';ctx.textAlign='left';ctx.fillText('30 seconds ago',left,bottom+20);ctx.textAlign='right';ctx.fillText('Now',right,bottom+20);
     ctx.textAlign='center';ctx.font='11px -apple-system,sans-serif';ctx.fillText('Relative mic level · dBFS, not calibrated dB SPL',w/2,h-footer);
   }

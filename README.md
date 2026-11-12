@@ -1,6 +1,6 @@
 # CINELIT METER
 
-A camera-first browser app for colour balance, lighting ratios, composition guides, reference overlays, spot estimates and sound checks.
+A camera-first browser app for colour balance, lighting ratios, composition guides, reference overlays, spot estimates and ROOM TONE checks.
 
 ## ZONEZ
 
@@ -12,7 +12,7 @@ Place A/B/C/D spots for approximate brightness relationships. Ratio headings sho
 
 ## Existing tools
 
-The original composition guides, colour/match behaviour, camera controls, reference photo, reference-calibrated spot tool and sound tools are retained. First use: Start Viewfinder and allow camera access. Add to Home Screen for the installed phone experience. Camera/lens, microphone, offline and sharing capabilities depend on browser/device.
+The original composition guides, colour/match behaviour, camera controls, reference photo, reference-calibrated spot tool and ROOM TONE tools are retained. First use: Start Viewfinder and allow camera access. Add to Home Screen for the installed phone experience. Camera/lens, microphone, offline and sharing capabilities depend on browser/device.
 
 These are processed browser-image estimates, not independently calibrated photometric or acoustic measurements. Browser SDR clipping cannot be recovered by ZONEZ. Source code delivered to the browser remains inspectable even if repository history is private.
 
@@ -20,7 +20,7 @@ Serve this static folder over HTTPS or localhost. For helper-source changes, run
 
 ## Composition: clean until aligned
 
-Composition starts without a permanent guide. Choose one of 21 compositions. With Soft alignment glow enabled, the selected guide softly appears only as nearby scene edges or focal points align. Enable Always show composition overlay for a constant guide, or disable both switches for no guides. Existing alignment-tolerance choices remain unchanged. This is a visual alignment heuristic, not a judgement of artistic composition.
+Composition starts without a permanent guide. Choose one of 21 compositions. Choose Appear on alignment to see the selected guide softly appear as nearby scene edges or focal points align, Always on for a constant guide, or Off for no guide. This selector is available beside the shape choices and in Controls. Existing alignment-tolerance choices remain unchanged. This is a visual alignment heuristic, not a judgement of artistic composition.
 
 
 ## Quick ZONEZ controls
@@ -45,3 +45,7 @@ The single flip-camera symbol immediately to the left of Controls switches betwe
 ## Live spot readings and wider Controls
 
 Spot mode shows a relative f/T stop immediately against 18% gray, with the reading beside its target. Match gray and shutter/ISO/ND controls stay at the bottom. Kelvin estimates are larger and warm/cool coloured. Enter a known lux or foot-candle reference before matching to estimate light levels on the same gray card at fixed camera exposure. These are image-based relative estimates; camera auto-exposure and different surface reflectance affect readings. Controls choices span the available width on mobile.
+
+## Bottom Controls, freeze and camera range
+
+Controls opens upward from the bottom. Interface accents are neutral gray; ZONEZ exposure colours and measured colour readings remain meaningful. Freeze frame is first in Controls, with a 0–100% dissolve over the live camera and a quick on-image slider; measurements stay frozen. Rotation buttons are compact. Spot shows relative f/T beside the target and a 36px warm/cool Kelvin estimate. Hardware zoom uses the full range reported by the camera; otherwise the slider remains a labelled preview crop. When multiple cameras/lenses are exposed by the browser, quick lens buttons highlight the active device. Physical lens availability and zoom range depend on the phone/browser. Sound is labelled ROOM TONE.
