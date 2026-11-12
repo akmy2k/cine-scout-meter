@@ -1,4 +1,4 @@
-const CACHE = 'cine-scout-meter-v36-camera-toggle';
+const CACHE = 'cine-scout-meter-v37-top-controls';
 const ROOT = new URL('./', self.location.href);
 self.addEventListener('install', event => {
   event.waitUntil((async () => {

@@ -426,14 +426,14 @@
       #spot-panel {padding:8px;}.spot-settings {min-width:0;}
     }
 
-    /* Bottom Controls, with space for every mode's readouts above it. */
-    #meter-top-actions {top:auto;bottom:max(8px,env(safe-area-inset-bottom));}
-    #menu {transform:translateY(100%);padding-top:max(16px,env(safe-area-inset-top));padding-bottom:calc(76px + env(safe-area-inset-bottom));}
+    /* Controls and Refresh stay at the top; measurement panels stay below. */
+    #meter-top-actions {top:max(8px,env(safe-area-inset-top));bottom:auto;}
+    #menu {transform:translateY(100%);padding-top:calc(66px + env(safe-area-inset-top));padding-bottom:max(20px,env(safe-area-inset-bottom));}
     #menu.open {transform:translateY(0);}
     #hud-bottom,#ratio-hud,#composition-tray {bottom:calc(64px + env(safe-area-inset-bottom));}
     #spot-panel {bottom:calc(60px + env(safe-area-inset-bottom));max-height:calc(100dvh - 142px - env(safe-area-inset-top) - env(safe-area-inset-bottom));}
     #spot-temperature {font-size:36px;}
-    #exposure-tools,#zoom-tools {width:min(155px,calc((100vw - 40px)/2));}
+    #exposure-tools,#zoom-tools {width:min(155px,calc((100vw - 208px)/2));}
     #lens-choices {position:fixed;top:calc(62px + env(safe-area-inset-top));right:max(8px,env(safe-area-inset-right));z-index:10;display:flex;gap:4px;max-width:calc(100vw - 16px);overflow-x:auto;}
     #lens-choices[hidden],body.menu-open #lens-choices,body.mode-sound #lens-choices,body.screenshot-mode #lens-choices {display:none;}
     #lens-choices button {font-size:10px;white-space:nowrap;max-width:150px;overflow:hidden;text-overflow:ellipsis;padding:6px 8px;border-radius:8px;background:#202020e8;color:#ddd;border:1px solid #666;}
@@ -694,7 +694,7 @@
     </div>
   </div>
 
-  <script src="meter-runtime.js?v=36"></script>
+  <script src="meter-runtime.js?v=37"></script>
   <script>
     const video = document.getElementById('video');
     const viewCanvas = document.getElementById('view-canvas');
