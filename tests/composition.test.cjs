@@ -47,3 +47,18 @@ const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
 for(const [,code]of html.matchAll(/<script>([\s\S]*?)<\/script>/g))new vm.Script(code);
 assert.equal(JSON.parse(fs.readFileSync(path.join(root,'manifest.json'))).orientation,'any');
 console.log('PASS: app script syntax and unlocked install orientation');
+
+function guideStrokes(baseVisible,glow,score){
+ const strokes=[];
+ const ctx=new Proxy({stroke(){strokes.push({colour:this.strokeStyle,blur:this.shadowBlur});}},{get:(object,key)=>key in object?object[key]:()=>{}});
+ scoutDrawGuide(ctx,800,600,thirds,{paths:thirds.paths.map(()=>score),focus:score,focusPoint:[1/3,1/3]},glow,.55,baseVisible);
+ return strokes;
+}
+assert.equal(guideStrokes(false,true,.4).length,0);
+assert.equal(guideStrokes(false,false,.95).length,0);
+assert(guideStrokes(false,true,.8).length>0);
+assert(guideStrokes(true,false,.1).length>0);
+const gentle=guideStrokes(false,true,.6)[0],strong=guideStrokes(false,true,.9)[0];
+assert(gentle.blur<strong.blur);
+assert(parseFloat(gentle.colour.split(',')[3])<parseFloat(strong.colour.split(',')[3]));
+console.log('PASS clean-until-aligned drawing, overlay/glow toggles and progressively soft guide appearance');

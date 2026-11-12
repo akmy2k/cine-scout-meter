@@ -1,49 +1,23 @@
 # CineLit Meter
 
-https://akmy2k.github.io/cine-scout-meter/
+A camera-first browser app for colour balance, lighting ratios, composition guides, reference overlays, spot estimates and sound checks.
 
-Browser camera tool for 60-30-10 colour balance, lighting ratios and EL Zone exposure overlays. These browser estimates are visual guides, not calibrated light-meter readings.
+## A ZONE
 
-## Install on phone
+Controls → A ZONE selects 9 bands (−4…+4), 5 bands (−2…+2), or 3 bands with independently adjustable under/over boundaries relative to 18% middle gray. Fractional stop distances are supported. The left legend keeps its frame while numbers grow with fewer bands. Tap it to cycle overlay strength 0/25/50/75/100%; default is 75% colour over 25% original picture. Tap the picture to compare with the source.
 
-- iPhone Safari: Share → Add to Home Screen → Add.
-- Android Chrome: menu → Install app / Add to Home screen.
-- Tap Start Viewfinder and allow camera access. Load once online for offline availability.
+## Ratios and reset
 
-No API key or server required. GitHub Pages serves this folder from main. Original plugin source is preserved in the FILM vault; this release checkout is separate.
+Place A/B/C/D spots for approximate brightness relationships. Ratio headings show whole-stop doubling factors only: 1:1, 2:1, 4:1, 8:1 and onward, reversed where appropriate. f/T labels use a relative middle-gray reference; this app does not measure lens transmission. The circular-arrow button beside Controls returns to clean 60/30/10 mode. Reloading a started tab reconnects to the clean colour feed.
 
-## Composition and full screen
+## Existing tools
 
-Select Composition in the existing controls menu, then choose one of 21 guides. Rotate or mirror a guide in the menu. Edges and focal marks glow green after sustained nearby edge/contrast alignment. This is an on-device visual heuristic, not object recognition or an aesthetic judgement; ambiguous, low-contrast and busy scenes may not register correctly.
+The original composition guides, colour/match behaviour, camera controls, reference photo, reference-calibrated spot tool and sound tools are retained. First use: Start Viewfinder and allow camera access. Add to Home Screen for the installed phone experience. Camera/lens, microphone, offline and sharing capabilities depend on browser/device.
 
-Tap Full screen or Landscape full screen. Requests depend on the browser; iPhone Safari may retain browser tabs. For a tab-free experience, Safari → Share → Add to Home Screen (enable Open as Web App if offered), then launch the icon. Rotate the phone with its portrait lock off. Existing home-screen installs may require reinstalling the icon to pick up the previous portrait-lock removal. Android Chrome installed mode also avoids browser tabs.
+These are processed browser-image estimates, not independently calibrated photometric or acoustic measurements. Browser SDR clipping cannot be recovered by A ZONE. Source code delivered to the browser remains inspectable even if repository history is private.
 
-Tap the shutter to freeze, then Save / Share photo. On iPhone choose Save Image in the native sheet. Other devices may offer Save Image, a Photos destination, or download; the app cannot silently write into the photo library. In Composition mode, Include guide in saved photo lets you choose an annotated or clean frame. Cancelling the share sheet keeps the frozen frame. Browser screenshots are another option.
+Serve this static folder over HTTPS or localhost. For helper-source changes, run python3 build-runtime.py to refresh meter-runtime.js.
 
-Double-tap the viewfinder to open controls, or tap the enlarged top handle. Composition opens a scrollable visual legend with a thumbnail and replication tip for each of 21 guides, including Room corner / leading lines for shooting into the L of a room. Tap a legend entry to apply it and return to the viewfinder. Show composition overlay and Alignment glow are separate switches. Double-tapping in Ratios restores the pre-gesture measurements, avoiding accidental nodes.
+## Composition: clean until aligned
 
-In Composition mode, a bottom strip shows all 21 shape thumbnails. Swipe it sideways to browse, tap a shape to apply it, or use Show shapes / Hide shapes to collapse it. The top iris button reads Controls while shooting and Camera while the menu is open. Double-tap access remains available. Matched lines and focal marks now use a stronger, steady glow. The strip is excluded from saved photos and hidden outside Composition mode.
-
-## Camera, exposure and sound
-
-Compact exposure and zoom sliders flank the Controls iris; a front/rear switch sits below it. The camera selector is inside Controls. Cameras are enumerated after permission; only cameras/lenses exposed by the browser can be selected. Optical wide/ultrawide/telephoto lenses may appear as one browser camera. Four zoom ticks mark the available range. Hardware zoom is used when exposed, otherwise zoom crops the preview; ticks do not imply optical lens changes. Camera EV uses hardware exposure compensation when available. Preview EV is a linear-light image simulation and affects the displayed/analysed image, not the physical sensor.
-
-EL Zone legend is on the safe-area-aware right side; shutter moves to the bottom right in this mode. Room corner is now the first composition, with Moderate default alignment (halfway between Forgiving and Balanced), plus Forgiving, Balanced and Precise choices. Glow remains a visual heuristic, not a physical camera lock or object detector.
-
-Sound is a fifth mode: tap Enable microphone for a full-screen rolling 30-second level graph, RMS and peak dBFS. These are relative digital microphone levels, not calibrated dB SPL or an occupational/noise safety measurement. Tap Record, Stop record, then Save audio to keep a local recording (up to 60 seconds). Nothing is uploaded or played back automatically. The enlarged graph has an adjustable quiet-pause target, initially −60 dBFS. This is a recording reference drawn from ACX finished-narration noise-floor guidance, not a universal film-location limit or calibrated room dBA reading. Assess quiet pauses at fixed microphone gain; phone automatic gain may affect readings. Microphone stops when leaving Sound or hiding the page. Denied permission can be retried. Camera/lens controls and automatic gain depend on browser/device support.
-
-Checks: `node tests/composition.test.cjs` and `node tests/camera-sound.test.cjs`.
-
-## Reference photo overlay
-
-Controls → Reference photo overlay → Load reference photo. A separate image overlays the current camera/source at 40% opacity, contained to preserve its proportions. Adjust 0–100% using the inline Reference slider on the camera view, or the menu slider; Reference toggles it off/on and Remove clears it. The reference is kept only in this tab's memory, never uploaded. Camera measurements and composition analysis still use the underlying camera/source. Visible references are included in captured frames; composition guides remain separately selectable for capture. The reference control is hidden in menus, Sound and capture UI.
-
-Tap the small i above the colour bar to open or close palette names, percentages, harmony details and colour grouping without opening Controls.
-
-## Spot meter — sixth mode
-
-Tap the viewfinder to position the spot. Enter shutter as a denominator (48 means 1/48 second), ISO and ND attenuation in stops (ND 0.6 = 2 stops). Open Match a trusted meter, enter its f-stop for that same target/settings, then Match. The readout gives an estimated aperture and relative stop difference. Higher ISO raises the recommended f-number; more ND or a faster shutter lowers the f-number. Changes are calculated from linearized image luminance relative to that matched spot, before preview EV and reference overlays.
-
-This is a reference-based scout tool, not an independently calibrated exposure meter. Keep source camera exposure and white balance fixed; browser automatic processing can invalidate comparison. Re-match after camera/source/zoom changes. Kelvin is a rough processed-image CCT estimate for a neutral grey/white target, not measured illuminant temperature; coloured, clipped and dark targets suppress it. Auto white balance can neutralize the original colour cast. Formula reference: McCamy CCT approximation described by Analog Devices: https://www.analog.com/en/resources/technical-articles/2022/07/16/11/28/map-colors-of-a-cie-plot-and-color-temperature-using-an-rgb-color-sensor.html .
-
-Additional check: `node tests/spot-meter.test.cjs`.
+Composition starts without a permanent guide. Choose one of 21 compositions. With Soft alignment glow enabled, the selected guide softly appears only as nearby scene edges or focal points align. Enable Always show composition overlay for a constant guide, or disable both switches for no guides. Existing alignment-tolerance choices remain unchanged. This is a visual alignment heuristic, not a judgement of artistic composition.

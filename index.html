@@ -70,7 +70,7 @@
       cursor: pointer; transition: all 0.2s ease;
     }
 
-    /* Compact EL Zone Legend */
+    /* Compact ZONES Legend */
     #el-legend {
       position: fixed; top: 50%; left: 10px;
       transform: translateY(-50%); z-index: 4;
@@ -302,9 +302,9 @@
     .mini-control-title {display:flex;align-items:center;justify-content:space-between;gap:4px;font-size:9px;line-height:12px;}
     #exposure-slider,#camera-zoom {width:100%;min-width:0;max-width:100%;height:24px;margin:0;accent-color:#a4efcb;}
     .zoom-track {position:relative;width:100%;} #zoom-ticks{position:absolute;left:7px;right:7px;bottom:0;height:5px;pointer-events:none;} #zoom-ticks span{position:absolute;width:1px;height:5px;background:#d2e5dd;}
-    #front-camera-toggle {position:fixed;z-index:10;top:max(8px,env(safe-area-inset-top));left:calc(50% + 64px);transform:none;width:36px;height:44px;min-height:44px;padding:4px;border:1px solid #627b70;border-radius:16px;background:rgba(12,21,23,.92);color:#e8f1ec;font-size:11px;}
-    @media(max-width:480px){#menu-handle{min-width:96px;padding:0 8px;}#front-camera-toggle{left:calc(50% + 52px);}#exposure-tools,#zoom-tools{box-sizing:border-box;width:calc((100vw - 208px)/2);}}
-    body.mode-sound #front-camera-toggle {display:none;} #camera-choice{position:static;max-width:58%;min-width:90px;margin:0;}
+    #reset-view-btn {position:fixed;z-index:35;top:max(8px,env(safe-area-inset-top));left:calc(50% + 64px);transform:none;width:36px;height:44px;min-height:44px;padding:4px;border:1px solid #627b70;border-radius:16px;background:rgba(12,21,23,.92);color:#e8f1ec;font-size:11px;}
+    @media(max-width:480px){#menu-handle{min-width:96px;padding:0 8px;}#reset-view-btn{left:calc(50% + 52px);}#exposure-tools,#zoom-tools{box-sizing:border-box;width:calc((100vw - 208px)/2);}}
+    #camera-choice{position:static;max-width:58%;min-width:90px;margin:0;}
     #quick-rot-btn {position:static;transform:none!important;align-self:flex-start;min-height:36px;}
     #sound-controls,body.has-camera-zoom #sound-controls {top:calc(env(safe-area-inset-top,0px) + 64px);flex-wrap:wrap;gap:6px;}
     #sound-status{flex:1;min-width:110px;font-size:10px;line-height:1.3;}
@@ -334,6 +334,19 @@
     #spot-scale{display:flex;gap:3px;overflow-x:auto;flex-shrink:0;padding:4px 0;touch-action:pan-x;}
     #spot-scale span{min-width:33px;text-align:center;font-size:12px;color:#d0ddd7;padding:7px 3px;border-top:2px solid #566c62;}
     #spot-scale span.active{border-color:#a4efcb;background:#315849;color:white;border-radius:4px;font-weight:700;}
+    /* Readable left-side ZONES legend, clear of phone safe areas. */
+    #el-legend {left:max(12px,env(safe-area-inset-left));right:auto;padding:9px 10px;gap:4px;max-height:calc(100dvh - 130px);background:rgba(0,0,0,.9);}
+    #el-legend {pointer-events:auto;cursor:pointer;touch-action:manipulation;}
+    #el-legend:focus-visible {outline:2px solid #facc15;outline-offset:3px;}
+    #el-legend .el-row {font-size:13px;line-height:1.2;font-weight:800;gap:7px;}
+    #el-legend .el-swatch {width:12px;height:14px;border-radius:2px;border:1px solid rgba(255,255,255,.65);}
+    /* A constant legend footprint; fewer bands get larger numerals. */
+    #el-legend {width:116px;height:min(300px,calc(100dvh - 130px));box-sizing:border-box;--zone-number-size:15px;}
+    #zone-legend-rows {display:flex;flex:1;min-height:0;flex-direction:column;gap:2px;}
+    #el-legend .el-row {flex:1;min-height:0;gap:7px;line-height:1;}
+    #el-legend .el-number {font-size:var(--zone-number-size);font-weight:800;}
+    #el-legend .el-row small {font-size:10px;}
+    #el-legend .el-swatch {height:65%;max-height:30px;min-height:8px;}
   </style>
 </head>
 <body>
@@ -354,8 +367,8 @@
   <div id="camera-tools">
     <div id="exposure-tools"><div class="mini-control-title"><label for="exposure-slider" id="exposure-label">Preview EV</label><output id="exposure-value">0.0</output></div><input id="exposure-slider" type="range" min="-2" max="2" step="0.1" value="0" aria-label="Exposure compensation"></div>
     <div id="zoom-tools"><div class="mini-control-title"><label for="camera-zoom">Zoom</label><output id="zoom-value">1.0×</output></div><div class="zoom-track"><input type="range" id="camera-zoom" min="1" max="3" step="0.1" value="1" aria-label="Camera zoom"><div id="zoom-ticks" aria-hidden="true"><span style="left:0%" title="1×"></span><span style="left:25%" title="1.5×"></span><span style="left:50%" title="2×"></span><span style="left:100%" title="3×"></span></div></div></div>
-    <button id="front-camera-toggle" aria-label="Switch front/rear camera" title="Switch to front camera">↺</button>
   </div>
+  <button id="reset-view-btn" aria-label="Reset to 60/30/10" title="Reset to clean 60/30/10 feed">↺</button>
   <div id="reference-quick" hidden>
     <label><input type="checkbox" id="reference-quick-enabled" checked> Reference</label>
     <input type="range" id="reference-quick-opacity" min="0" max="100" step="1" value="40" aria-label="Live reference opacity"><output id="reference-quick-value">40%</output>
@@ -365,7 +378,7 @@
     <div id="sound-controls"><button class="ui-btn" id="sound-start">Enable microphone</button><button class="ui-btn" id="sound-record" disabled>Record</button><button class="ui-btn" id="sound-save" disabled>Save audio</button><span id="sound-status" role="status">Microphone off</span></div>
   </section>
   <div id="grid"></div>
-  <div id="el-legend"></div>
+  <div id="el-legend" role="button" tabindex="0" aria-label="Cycle ZONES overlay strength"></div>
   <div id="flash-overlay"></div>
 
   <div id="shot-bar">
@@ -378,7 +391,7 @@
   <div id="app-notice" role="status" aria-live="polite"></div>
 
   <div id="ratio-hud">
-    <span id="ratio-status">Tap 2 spots for Ratio 1</span>
+    <span id="ratio-status">Tap to place A, then B</span>
     <button id="ratio-clear-inline">Clear</button>
   </div>
 
@@ -390,12 +403,23 @@
     <div class="mode-tabs" style="grid-template-columns:repeat(2,1fr)">
       <button class="mode-tab active" data-mode="color">1. COLOR (60-30-10)</button>
       <button class="mode-tab" data-mode="ratios">2. RATIOS (3x)</button>
-      <button class="mode-tab" data-mode="elzone">3. EL ZONE</button>
+      <button class="mode-tab" data-mode="elzone">3. A ZONE</button>
       <button class="mode-tab" data-mode="composition">4. COMPOSITION</button>
       <button class="mode-tab" data-mode="sound">5. SOUND</button>
       <button class="mode-tab" data-mode="spot">6. SPOT METER</button>
     </div>
 
+    <section id="zones-controls" hidden>
+      <div class="drawer-section-title">A ZONE</div>
+      <div class="menu-row"><label for="zone-map-size">Stop map</label><select id="zone-map-size" aria-label="A ZONE map size" class="ui-select"><option value="9">9 stops · −4 to +4</option><option value="5">5 stops · −2 to +2</option><option value="3">3 stops · adjustable</option></select></div>
+      <section id="zone-three-controls" hidden>
+        <div class="menu-row"><label for="zone-under-boundary">Under gray · stops below</label><input type="number" id="zone-under-boundary" aria-label="Under middle gray boundary" min="0.01" step="any" value="1" style="width:75px;padding:7px;background:#152021;color:white;border:1px solid #687b73"></div>
+        <div class="menu-row"><label for="zone-over-boundary">Over gray · stops above</label><input type="number" id="zone-over-boundary" aria-label="Over middle gray boundary" min="0.01" step="any" value="1" style="width:75px;padding:7px;background:#152021;color:white;border:1px solid #687b73"></div>
+        <p class="control-help">Three bands: at/below the under boundary, middle, and at/above the over boundary. Default ±1 stop from 18% gray. Set either distance independently, including fractional stops.</p>
+      </section>
+      <div class="menu-row"><label for="zone-overlay-strength">Colour overlay</label><select id="zone-overlay-strength" aria-label="ZONES overlay strength" class="ui-select"><option value="0">0%</option><option value="25">25%</option><option value="50">50%</option><option value="75" selected>75%</option><option value="100">100%</option></select></div>
+      <p class="control-help">Tap the left legend to cycle 0%, 25%, 50%, 75% and 100% ZONES colour. The original picture shows through the rest. Readings use the source image.</p>
+    </section>
     <div class="drawer-section-title">Screen orientation</div>
   <button id="quick-rot-btn" title="Enter full screen" aria-label="Enter full screen">⛶ Full screen</button>
     <div class="mode-tabs" style="grid-template-columns: repeat(2, 1fr);">
@@ -408,8 +432,9 @@
       <label for="composition-guide">Guide</label>
       <select id="composition-guide" class="ui-select"></select>
       <p id="guide-instruction" class="control-help"></p>
-      <div class="menu-row"><label for="guide-visible">Show composition overlay</label><input type="checkbox" id="guide-visible" checked></div>
-      <div class="menu-row"><label for="guide-glow">Alignment glow</label><input type="checkbox" id="guide-glow" checked></div>
+      <div class="menu-row"><label for="guide-visible">Always show composition overlay</label><input type="checkbox" id="guide-visible"></div>
+      <div class="menu-row"><label for="guide-glow">Soft alignment glow</label><input type="checkbox" id="guide-glow" checked></div>
+      <p class="control-help">Clean picture by default. The selected guide appears softly only when nearby scene lines or focal points align. Turn on Always show for a permanent guide, or switch both off for no guides.</p>
       <label class="control-help" for="guide-threshold">Alignment tolerance</label>
       <select class="ui-select" id="guide-threshold"><option value="0.48">Forgiving</option><option value="0.55" selected>Moderate</option><option value="0.62">Balanced</option><option value="0.75">Precise</option></select>
       <div id="composition-legend" role="group" aria-label="Choose a composition to replicate"></div>
@@ -443,6 +468,7 @@
       </div>
     </div>
 
+    <div class="menu-row"><label for="ratio-stop-notation">Ratio stop notation</label><select class="ui-select" id="ratio-stop-notation" aria-label="Ratio stop notation"><option value="f">f-stop</option><option value="T">T-stop</option></select></div>
     <div class="menu-row">
       <span>Middle Gray Reference (Ratios)</span>
       <select class="ui-select" id="base-fstop">
@@ -556,11 +582,7 @@
     </div>
   </div>
 
-  <script src="color-grouping.js?v=20"></script>
-  <script src="composition.js?v=20"></script>
-  <script src="ratio-labels.js?v=20"></script>
-  <script src="spot-meter.js?v=20"></script>
-  <script src="camera-sound.js?v=20"></script>
+  <script src="meter-runtime.js?v=25"></script>
   <script>
     const video = document.getElementById('video');
     const viewCanvas = document.getElementById('view-canvas');
@@ -649,6 +671,7 @@
       // Invoke fullscreen while this tap still carries browser user activation.
       const immersion=enterImmersive(false);
       launchGate.style.display='none';
+      try{sessionStorage.setItem('cinelit-meter-started','1');}catch{}
       await startCamera();await immersion;
     });
     document.getElementById('layout-vert-btn').addEventListener('click',()=>{
@@ -675,13 +698,13 @@
       const thumbnail=document.createElement('canvas');thumbnail.width=144;thumbnail.height=92;thumbnail.setAttribute('aria-hidden','true');
       scoutDrawGuide(thumbnail.getContext('2d'),144,92,scoutGuideGeometry(id,0,false,144/92),{paths:[],focus:0},false);
       const words=document.createElement('span'),title=document.createElement('strong'),tip=document.createElement('small');title.textContent=label;tip.textContent=SCOUT_GUIDE_TIPS[id];words.append(title,tip);button.append(thumbnail,words);
-      button.addEventListener('click',()=>{guideSelect.value=id;document.getElementById('guide-visible').checked=true;updateGuide();refreshGuideLegend();menu.classList.remove('open');});legend.append(button);
+      button.addEventListener('click',()=>{guideSelect.value=id;updateGuide();refreshGuideLegend();menu.classList.remove('open');});legend.append(button);
     }
     const shapeStrip=document.getElementById('composition-shapes');
     for(const [id,label] of Object.entries(SCOUT_GUIDES)){
       const button=document.createElement('button');button.type='button';button.className='shape-choice';button.dataset.guide=id;button.setAttribute('aria-label',label);button.setAttribute('aria-pressed',String(id===guideSelect.value));
       const thumb=document.createElement('canvas');thumb.width=136;thumb.height=80;thumb.setAttribute('aria-hidden','true');scoutDrawGuide(thumb.getContext('2d'),136,80,scoutGuideGeometry(id,0,false,136/80),{paths:[],focus:0},false);
-      const name=document.createElement('span');name.textContent=label;button.append(thumb,name);button.addEventListener('click',()=>{guideSelect.value=id;document.getElementById('guide-visible').checked=true;updateGuide();refreshGuideLegend();});shapeStrip.append(button);
+      const name=document.createElement('span');name.textContent=label;button.append(thumb,name);button.addEventListener('click',()=>{guideSelect.value=id;updateGuide();refreshGuideLegend();});shapeStrip.append(button);
     }
     document.getElementById('composition-tray-toggle').addEventListener('click',()=>{
       shapeStrip.hidden=!shapeStrip.hidden;const button=document.getElementById('composition-tray-toggle');button.setAttribute('aria-expanded',String(!shapeStrip.hidden));button.firstChild.textContent=shapeStrip.hidden?'◇ Show shapes ':'◇ Hide shapes ';
@@ -712,6 +735,7 @@
       document.getElementById('sound-overlay').hidden=mode!=='sound';document.body.classList.toggle('mode-sound',mode==='sound');document.body.classList.toggle('mode-elzone',mode==='elzone');
       if(mode==='sound')soundMeter.draw();
       activeMode = mode;
+      document.getElementById('zones-controls').hidden=mode!=='elzone';
       document.getElementById('spot-panel').hidden=mode!=='spot';document.body.classList.toggle('mode-spot',mode==='spot');
       document.getElementById('composition-tray').hidden=mode!=='composition';
       document.getElementById('composition-controls').hidden = mode !== 'composition';
@@ -730,38 +754,53 @@
       btn.addEventListener('click', () => setMode(btn.dataset.mode));
     });
 
-    const EL_ZONES = [
-      { min: 4.5,  label: '+5 EV', rgb: [255, 255, 255], hex: '#FFFFFF' },
-      { min: 3.5,  label: '+4 EV', rgb: [255, 50, 50],   hex: '#FF3232' },
-      { min: 2.5,  label: '+3 EV', rgb: [255, 145, 0],   hex: '#FF9100' },
-      { min: 1.5,  label: '+2 EV', rgb: [255, 230, 0],   hex: '#FFE600' },
-      { min: 0.75, label: '+1 EV', rgb: [255, 175, 205], hex: '#FFAFCD' },
-      { min: 0.25, label: '+½ EV', rgb: [215, 245, 110], hex: '#D7F56E' },
-      { min: -0.25,label: ' 0 EV', rgb: [0, 210, 80],    hex: '#00D250' },
-      { min: -0.75,label: '-½ EV', rgb: [150, 155, 160], hex: '#969BA0' },
-      { min: -1.5, label: '-1 EV', rgb: [0, 215, 235],   hex: '#00D7EB' },
-      { min: -2.5, label: '-2 EV', rgb: [35, 115, 255],  hex: '#2373FF' },
-      { min: -3.5, label: '-3 EV', rgb: [135, 60, 255],  hex: '#873CFF' },
-      { min: -4.5, label: '-4 EV', rgb: [200, 0, 185],   hex: '#C800B9' },
-      { min: -99,  label: '-5 EV', rgb: [20, 10, 30],    hex: '#140A1E' }
-    ];
-
+    let activeZoneMap=cineZoneMap(9);
+    let zonesVisible = true;
+    let zoneOverlayStrength=.75;
     const legendEl = document.getElementById('el-legend');
-    EL_ZONES.forEach(z => {
-      const row = document.createElement('div');
-      row.className = 'el-row';
-      row.innerHTML = `<div class="el-swatch" style="background:${z.hex}"></div><span>${z.label}</span>`;
-      legendEl.appendChild(row);
-    });
-
-    const elLutR = new Uint8Array(256), elLutG = new Uint8Array(256), elLutB = new Uint8Array(256);
-    for (let i = 0; i < 256; i++) {
-      const v = i / 255;
-      const lin = v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
-      const stops = Math.log2(Math.max(lin, 0.0001) / 0.18);
-      const zone = EL_ZONES.find(z => stops >= z.min) || EL_ZONES[EL_ZONES.length - 1];
-      elLutR[i] = zone.rgb[0]; elLutG[i] = zone.rgb[1]; elLutB[i] = zone.rgb[2];
+    const overlayControl=document.getElementById('zone-overlay-strength');
+    const legendHeading=document.createElement('span');
+    legendHeading.style.cssText='font-size:10px;letter-spacing:.04em;white-space:nowrap';
+    legendHeading.textContent='A ZONE · 9';legendEl.appendChild(legendHeading);
+    const overlayReadout=document.createElement('output');
+    overlayReadout.id='zone-overlay-readout';overlayReadout.setAttribute('aria-live','polite');
+    overlayReadout.style.cssText='font-size:14px;font-weight:800;margin-bottom:3px';
+    overlayReadout.textContent='75%';legendEl.appendChild(overlayReadout);
+    function setZoneOverlay(percent){
+      zoneOverlayStrength=percent/100;overlayControl.value=String(percent);
+      overlayReadout.textContent=percent+'%';zonesVisible=true;
     }
+    function cycleZoneOverlay(){
+      const steps=[0,25,50,75,100],current=Math.round(zoneOverlayStrength*100);
+      setZoneOverlay(steps[(steps.indexOf(current)+1)%steps.length]);
+    }
+    legendEl.addEventListener('click',event=>{event.stopPropagation();cycleZoneOverlay();});
+    legendEl.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();cycleZoneOverlay();}});
+    overlayControl.addEventListener('change',event=>setZoneOverlay(Number(event.target.value)));
+    const legendRows=document.createElement('div');legendRows.id='zone-legend-rows';legendEl.appendChild(legendRows);
+    function updateZoneMap(){
+      const count=Number(document.getElementById('zone-map-size').value);
+      const under=Number(document.getElementById('zone-under-boundary').value),over=Number(document.getElementById('zone-over-boundary').value);
+      if(count===3&&(!Number.isFinite(under)||under<=0||!Number.isFinite(over)||over<=0))return;
+      activeZoneMap=cineZoneMap(count,under,over);
+      document.getElementById('zone-three-controls').hidden=count!==3;
+      legendHeading.textContent='A ZONE · '+count;
+      legendEl.style.setProperty('--zone-number-size',count===3?'30px':count===5?'23px':'15px');
+      legendRows.replaceChildren(...activeZoneMap.map(z=>{
+        const row=document.createElement('div');row.className='el-row';
+        const swatch=document.createElement('i');swatch.className='el-swatch';swatch.style.background=z.hex;
+        const number=document.createElement('span');number.className='el-number';number.textContent=z.stop===0?'0':z.label;
+        number.title=z.label+' stops from 18% gray';
+        if(number.textContent.length>4)number.style.fontSize=Math.max(10,(count===3?30:count===5?23:15)*4/number.textContent.length)+'px';
+        row.append(swatch,number);
+        if(z.stop===0){const gray=document.createElement('small');gray.textContent='18%';row.appendChild(gray);}
+        return row;
+      }));
+      zonesVisible=true;
+    }
+    document.getElementById('zone-map-size').addEventListener('change',updateZoneMap);
+    for(const id of ['zone-under-boundary','zone-over-boundary'])document.getElementById(id).addEventListener('input',updateZoneMap);
+    updateZoneMap();
 
     let lastW = 0, lastH = 0;
     function syncCanvasDimensions() {
@@ -788,7 +827,6 @@
         devices.forEach((d,i)=>{const option=document.createElement('option');option.value=d.deviceId;option.textContent=d.label||`Camera ${i+1}`;cameraChoice.append(option);});
         if(!devices.length){const option=document.createElement('option');option.value='';option.textContent='Default camera';cameraChoice.append(option);}
         cameraChoice.value=selectedCamera;cameraChoice.disabled=devices.length<2;
-        document.getElementById('front-camera-toggle').disabled=devices.length<2;
         cameraChoice.title=devices.length<2?'This browser exposes one camera. Other physical lenses may not be separately available.':'Cameras made available by this browser';
       }catch{cameraChoice.title='Camera list unavailable until permission is granted';}
     }
@@ -808,7 +846,6 @@
       const marks=min<=.5&&max>=3?[.5,1,2,3]:min===1&&max>=3?[1,1.5,2,3]:Array.from({length:4},(_,i)=>min+(max-min)*i/3);
       marks.forEach(value=>{const tick=document.createElement('span');tick.style.left=(max>min?100*(value-min)/(max-min):0)+'%';tick.title=value.toFixed(1)+'×';ticks.append(tick);});
       const facing=settings.facingMode;if(facing==='user'||facing==='environment')facingMode=facing;
-      document.getElementById('front-camera-toggle').title=facingMode==='user'?'Switch to rear camera':'Switch to front camera';
 
     }
     exposureSlider.addEventListener('input',()=>{
@@ -827,7 +864,6 @@
       if(!hardwareZoom||uploadedImg){previewZoom=value;return;}
       try{await cameraTrack?.applyConstraints({advanced:[{zoom:value}]});}catch{hardwareZoom=false;previewZoom=Math.max(1,value);showNotice('Hardware zoom unavailable. Using a preview crop.');}
     });
-    document.getElementById('front-camera-toggle').addEventListener('click',()=>document.getElementById('flip-btn').click());
     navigator.mediaDevices?.addEventListener?.('devicechange',refreshCameras);
     async function startCamera() {
       const generation=++cameraGeneration;
@@ -935,11 +971,11 @@
     function updateRatioHudText() {
       const n = ratioNodes.length;
       const statusEl = document.getElementById('ratio-status');
-      if (n === 0) statusEl.innerText = 'Tap 2 spots for Ratio 1';
-      else if (n === 1) statusEl.innerText = 'Tap 2nd spot for Cyan Ratio';
-      else if (n === 2) statusEl.innerText = 'Tap 3rd spot to attach Pink Ratio';
-      else if (n === 3) statusEl.innerText = 'Tap 4th spot to attach Yellow Ratio';
-      else statusEl.innerText = '3/3 Ratios • Drag any node or Clear';
+      if (n === 0) statusEl.innerText = 'Tap to place A, then B';
+      else if (n === 1) statusEl.innerText = 'Tap to place B · compare A–B';
+      else if (n === 2) statusEl.innerText = 'Tap to place C';
+      else if (n === 3) statusEl.innerText = 'Tap to place D';
+      else statusEl.innerText = 'A–D · Drag any spot or Clear';
     }
 
     const flashEl = document.getElementById('flash-overlay');
@@ -1058,13 +1094,13 @@
       if(isScreenshotMode)return;
       const now=performance.now();
       if(lastViewTap && now-lastViewTap.time<360 && Math.hypot(e.clientX-lastViewTap.x,e.clientY-lastViewTap.y)<36){
-        ratioNodes=lastViewTap.nodes;ratioEdges=lastViewTap.edges;draggingNodeIndex=-1;updateRatioHudText();
+        zonesVisible=lastViewTap.zonesVisible;ratioNodes=lastViewTap.nodes;ratioEdges=lastViewTap.edges;draggingNodeIndex=-1;updateRatioHudText();
         menu.classList.add('open');lastViewTap=null;viewTapStart=null;e.preventDefault();e.stopImmediatePropagation();return;
       }
-      viewTapStart={x:e.clientX,y:e.clientY,time:now,nodes:ratioNodes.map(n=>({...n})),edges:ratioEdges.map(edge=>({...edge}))};
+      viewTapStart={x:e.clientX,y:e.clientY,time:now,zonesVisible,nodes:ratioNodes.map(n=>({...n})),edges:ratioEdges.map(edge=>({...edge}))};
     },true);
     window.addEventListener('pointerup',e=>{
-      if(viewTapStart && performance.now()-viewTapStart.time<300 && Math.hypot(e.clientX-viewTapStart.x,e.clientY-viewTapStart.y)<14){lastViewTap={...viewTapStart,time:performance.now()};}
+      if(viewTapStart && performance.now()-viewTapStart.time<300 && Math.hypot(e.clientX-viewTapStart.x,e.clientY-viewTapStart.y)<14){lastViewTap={...viewTapStart,time:performance.now()};if(activeMode==='elzone'&&!menu.classList.contains('open'))zonesVisible=!zonesVisible;}
       else lastViewTap=null;
       viewTapStart=null;
     },true);
@@ -1128,7 +1164,6 @@
     window.addEventListener('pointerup', () => { draggingNodeIndex = -1; });
 
     const F_STOP_GUESTIMATE = [1.4, 2, 2.8, 4, 5.6, 8, 11, 16, 22];
-    const RATIO_BUCKETS = [1, 1.5, 2, 3, 4, 6, 8, 12, 16];
 
     function measureSpotStabilized(node) {
       const px = Math.floor(node.x * rawCanvas.width);
@@ -1160,11 +1195,8 @@
     }
 
     function snapRatioGuesstimate(r) {
-      let best = RATIO_BUCKETS[0];
-      for (let b of RATIO_BUCKETS) {
-        if (Math.abs(b - r) < Math.abs(best - r)) best = b;
-      }
-      return best;
+      // A rough full-stop relationship: each step doubles the amount of light.
+      return 2 ** Math.round(Math.log2(Math.max(1, r)));
     }
 
     function drawMultiRatiosOverlay(ctx, width, height) {
@@ -1198,7 +1230,8 @@
         const snapped = snapRatioGuesstimate(rawRatio);
         const ratioStr = p1.meter.Y >= p2.meter.Y ? `${snapped}:1` : `1:${snapped}`;
         const label = ratioStr;
-        const detail = `${edge.from+1}: f/${p1.meter.fStop}   ${edge.to+1}: f/${p2.meter.fStop}`;
+        const notation=document.getElementById('ratio-stop-notation').value;
+        const detail = `${cineSpotLetter(edge.from)}: ${notation}/${p1.meter.fStop}   ${cineSpotLetter(edge.to)}: ${notation}/${p2.meter.fStop}`;
         const mx=(p1.x+p2.x)/2,my=(p1.y+p2.y)/2;
         ctx.font='700 14px -apple-system, BlinkMacSystemFont, sans-serif';
         const detailW=ctx.measureText(detail).width;
@@ -1231,7 +1264,7 @@
 
         ctx.font='900 16px -apple-system, BlinkMacSystemFont, sans-serif';
         ctx.fillStyle='#f4f7f8';ctx.textAlign='center';ctx.textBaseline='middle';
-        ctx.fillText(String(index+1),0,1);
+        ctx.fillText(cineSpotLetter(index),0,1);
         ctx.restore();
       });
     }
@@ -1389,12 +1422,14 @@
       }
 
       if (hasFrame) {
-        if (activeMode === 'elzone') {
+        if (activeMode === 'elzone' && zonesVisible) {
           const imgData = rawCtx.getImageData(0, 0, rawCanvas.width, rawCanvas.height);
           const d = imgData.data;
           for (let i = 0; i < d.length; i += 4) {
-            const luma = (d[i] * 54 + d[i+1] * 183 + d[i+2] * 19) >> 8;
-            d[i] = elLutR[luma]; d[i+1] = elLutG[luma]; d[i+2] = elLutB[luma];
+            const zone=cineZoneForRGBFast(d[i],d[i+1],d[i+2],activeZoneMap);
+            d[i]=zone.rgb[0]*zoneOverlayStrength+d[i]*(1-zoneOverlayStrength);
+            d[i+1]=zone.rgb[1]*zoneOverlayStrength+d[i+1]*(1-zoneOverlayStrength);
+            d[i+2]=zone.rgb[2]*zoneOverlayStrength+d[i+2]*(1-zoneOverlayStrength);
           }
           viewCtx.putImageData(imgData, 0, 0);
         } else {
@@ -1403,7 +1438,7 @@
 
         drawReferenceOverlay(viewCtx,viewCanvas.width,viewCanvas.height);
         if(activeMode==='spot')spotMeter.draw(viewCtx,viewCanvas.width,viewCanvas.height);
-        if (activeMode === 'composition' && document.getElementById('guide-visible').checked) {
+        if (activeMode === 'composition') {
           if(!isFrozen && frameCount % 8 === 0) {
             guideSample.width=80;guideSample.height=Math.max(32,Math.min(120,Math.round(80*rawCanvas.height/rawCanvas.width)));
             guideSampleCtx.drawImage(rawCanvas,0,0,guideSample.width,guideSample.height);
@@ -1413,7 +1448,7 @@
             guideAlignment.focus=guideAlignment.focus*(1-alpha)+next.focus*alpha;
             guideAlignment.focusPoint=next.focusPoint;
           }
-          scoutDrawGuide(viewCtx,viewCanvas.width,viewCanvas.height,guideGeometry,guideAlignment,document.getElementById('guide-glow').checked,Number(document.getElementById('guide-threshold').value));
+          scoutDrawGuide(viewCtx,viewCanvas.width,viewCanvas.height,guideGeometry,guideAlignment,document.getElementById('guide-glow').checked,Number(document.getElementById('guide-threshold').value),document.getElementById('guide-visible').checked);
         }
         if (activeMode === 'ratios') {
           drawMultiRatiosOverlay(viewCtx, viewCanvas.width, viewCanvas.height);
@@ -1493,6 +1528,32 @@
       navigator.serviceWorker.register('sw.js').catch(() => {});
     }
 
+    function resetToColorFeed(){
+      document.getElementById('grid-toggle').checked=false;
+      document.getElementById('freeze-toggle').checked=false;
+      isFrozen=false;
+      ratioNodes=[];ratioEdges=[];draggingNodeIndex=-1;
+      updateRatioHudText();
+      uploadedImg=null;fileInput.value='';
+      document.getElementById('live-btn').style.display='none';
+      referenceEnabled.checked=false;
+      syncReferenceControls();document.getElementById('reference-quick').hidden=true;
+      setMode('color');
+      if(video.readyState<2)startCamera();
+    }
+    document.getElementById('reset-view-btn').addEventListener('click',resetToColorFeed);
+
+    // A refresh returns to the original clean colour feed, never a measurement overlay.
+    document.getElementById('grid-toggle').checked=false;
+    document.getElementById('freeze-toggle').checked=false;
+    isFrozen=false;
+    setMode('color');
+    try{
+      if(sessionStorage.getItem('cinelit-meter-started')==='1'){
+        launchGate.style.display='none';
+        startCamera();
+      }
+    }catch{}
     renderLoop();
   </script>
 </body>
