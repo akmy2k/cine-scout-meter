@@ -8,9 +8,9 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="mobile-web-app-capable" content="yes">
   <link rel="manifest" href="manifest.json">
-  <title>CineLit Meter</title>
+  <title>CINELIT METER</title>
   <link rel="apple-touch-icon" href="icon-192.png">
-  <meta name="apple-mobile-web-app-title" content="CineLit Meter">
+  <meta name="apple-mobile-web-app-title" content="CINELIT METER">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace; }
     html, body {
@@ -70,7 +70,7 @@
       cursor: pointer; transition: all 0.2s ease;
     }
 
-    /* Compact ZONES Legend */
+    /* Compact ZONEZ Legend */
     #el-legend {
       position: fixed; top: 50%; left: 10px;
       transform: translateY(-50%); z-index: 4;
@@ -334,9 +334,9 @@
     #spot-scale{display:flex;gap:3px;overflow-x:auto;flex-shrink:0;padding:4px 0;touch-action:pan-x;}
     #spot-scale span{min-width:33px;text-align:center;font-size:12px;color:#d0ddd7;padding:7px 3px;border-top:2px solid #566c62;}
     #spot-scale span.active{border-color:#a4efcb;background:#315849;color:white;border-radius:4px;font-weight:700;}
-    /* Readable left-side ZONES legend, clear of phone safe areas. */
+    /* Readable left-side ZONEZ legend, clear of phone safe areas. */
     #el-legend {left:max(12px,env(safe-area-inset-left));right:auto;padding:9px 10px;gap:4px;max-height:calc(100dvh - 130px);background:rgba(0,0,0,.9);}
-    #el-legend {pointer-events:auto;cursor:pointer;touch-action:manipulation;}
+    #el-legend {pointer-events:auto;cursor:pointer;touch-action:manipulation;transition:background-color .2s ease,box-shadow .2s ease;}
     #el-legend:focus-visible {outline:2px solid #facc15;outline-offset:3px;}
     #el-legend .el-row {font-size:13px;line-height:1.2;font-weight:800;gap:7px;}
     #el-legend .el-swatch {width:12px;height:14px;border-radius:2px;border:1px solid rgba(255,255,255,.65);}
@@ -347,12 +347,19 @@
     #el-legend .el-number {font-size:var(--zone-number-size);font-weight:800;}
     #el-legend .el-row small {font-size:10px;}
     #el-legend .el-swatch {height:65%;max-height:30px;min-height:8px;}
+    #el-legend {height:min(300px,calc(100dvh - 180px));max-height:calc(100dvh - 180px);}
+    #zone-map-toggle {position:fixed;z-index:5;left:max(12px,env(safe-area-inset-left));top:calc(50% + 25px + min(150px,calc((100dvh - 180px)/2)) + 8px);width:116px;min-height:36px;display:flex;justify-content:space-around;align-items:center;padding:4px;border:1px solid #687c77;border-radius:8px;background:rgba(0,0,0,.9);color:white;cursor:pointer;touch-action:manipulation;font-size:15px;}
+    #zone-map-toggle[hidden] {display:none;}
+    #zone-map-toggle span {padding:3px 7px;border-radius:4px;color:#9da9ad;}
+    #zone-map-toggle span.active {background:#2563eb;color:white;font-weight:800;}
+    #zone-map-toggle:focus-visible {outline:2px solid #facc15;outline-offset:3px;}
+    body.screenshot-mode #zone-map-toggle {display:none;}
   </style>
 </head>
 <body>
 
   <div id="launch-gate">
-    <div class="gate-title">CineLit Meter</div>
+    <div class="gate-title">CINELIT METER</div>
     <div class="gate-sub">Colour • Light • Composition</div>
     <p class="gate-sub">For a view without browser tabs: Safari → Share → Add to Home Screen. Open from that icon and rotate your phone.</p>
     <button id="start-app-btn">Start Viewfinder</button>
@@ -378,7 +385,8 @@
     <div id="sound-controls"><button class="ui-btn" id="sound-start">Enable microphone</button><button class="ui-btn" id="sound-record" disabled>Record</button><button class="ui-btn" id="sound-save" disabled>Save audio</button><span id="sound-status" role="status">Microphone off</span></div>
   </section>
   <div id="grid"></div>
-  <div id="el-legend" role="button" tabindex="0" aria-label="Cycle ZONES overlay strength"></div>
+  <div id="el-legend" role="button" tabindex="0" aria-label="Cycle ZONEZ overlay strength"></div>
+  <button type="button" id="zone-map-toggle" aria-label="Cycle ZONEZ map size" title="Tap to cycle 3, 5 and 9 zones" hidden><span data-zone-count="3">3</span><span data-zone-count="5">5</span><span data-zone-count="9">9</span></button>
   <div id="flash-overlay"></div>
 
   <div id="shot-bar">
@@ -403,22 +411,22 @@
     <div class="mode-tabs" style="grid-template-columns:repeat(2,1fr)">
       <button class="mode-tab active" data-mode="color">1. COLOR (60-30-10)</button>
       <button class="mode-tab" data-mode="ratios">2. RATIOS (3x)</button>
-      <button class="mode-tab" data-mode="elzone">3. A ZONE</button>
+      <button class="mode-tab" data-mode="elzone">3. ZONEZ</button>
       <button class="mode-tab" data-mode="composition">4. COMPOSITION</button>
       <button class="mode-tab" data-mode="sound">5. SOUND</button>
       <button class="mode-tab" data-mode="spot">6. SPOT METER</button>
     </div>
 
     <section id="zones-controls" hidden>
-      <div class="drawer-section-title">A ZONE</div>
-      <div class="menu-row"><label for="zone-map-size">Stop map</label><select id="zone-map-size" aria-label="A ZONE map size" class="ui-select"><option value="9">9 stops · −4 to +4</option><option value="5">5 stops · −2 to +2</option><option value="3">3 stops · adjustable</option></select></div>
+      <div class="drawer-section-title">ZONEZ</div>
+      <div class="menu-row"><label for="zone-map-size">Stop map</label><select id="zone-map-size" aria-label="ZONEZ map size" class="ui-select"><option value="9">9 stops · −4 to +4</option><option value="5">5 stops · −2 to +2</option><option value="3">3 stops · adjustable</option></select></div>
       <section id="zone-three-controls" hidden>
         <div class="menu-row"><label for="zone-under-boundary">Under gray · stops below</label><input type="number" id="zone-under-boundary" aria-label="Under middle gray boundary" min="0.01" step="any" value="1" style="width:75px;padding:7px;background:#152021;color:white;border:1px solid #687b73"></div>
         <div class="menu-row"><label for="zone-over-boundary">Over gray · stops above</label><input type="number" id="zone-over-boundary" aria-label="Over middle gray boundary" min="0.01" step="any" value="1" style="width:75px;padding:7px;background:#152021;color:white;border:1px solid #687b73"></div>
         <p class="control-help">Three bands: at/below the under boundary, middle, and at/above the over boundary. Default ±1 stop from 18% gray. Set either distance independently, including fractional stops.</p>
       </section>
-      <div class="menu-row"><label for="zone-overlay-strength">Colour overlay</label><select id="zone-overlay-strength" aria-label="ZONES overlay strength" class="ui-select"><option value="0">0%</option><option value="25">25%</option><option value="50">50%</option><option value="75" selected>75%</option><option value="100">100%</option></select></div>
-      <p class="control-help">Tap the left legend to cycle 0%, 25%, 50%, 75% and 100% ZONES colour. The original picture shows through the rest. Readings use the source image.</p>
+      <div class="menu-row"><label for="zone-overlay-strength">Colour overlay</label><select id="zone-overlay-strength" aria-label="ZONEZ overlay strength" class="ui-select"><option value="0">0%</option><option value="35">35%</option><option value="50">50%</option><option value="75" selected>75%</option><option value="100">100%</option></select></div>
+      <p class="control-help">Tap the left legend to cycle 0%, 35%, 50%, 75% and 100% ZONEZ colour. The original picture shows through the rest. Readings use the source image.</p>
     </section>
     <div class="drawer-section-title">Screen orientation</div>
   <button id="quick-rot-btn" title="Enter full screen" aria-label="Enter full screen">⛶ Full screen</button>
@@ -468,6 +476,8 @@
       </div>
     </div>
 
+    <div class="menu-row"><label for="ratio-sticky">Sticky ratio spots</label><input type="checkbox" id="ratio-sticky" checked></div>
+    <p class="control-help">Spots track nearby image texture on this device. A dashed ring means tracking is uncertain: drag that letter back onto the subject to reattach it. Works best with textured details and modest movement.</p>
     <div class="menu-row"><label for="ratio-stop-notation">Ratio stop notation</label><select class="ui-select" id="ratio-stop-notation" aria-label="Ratio stop notation"><option value="f">f-stop</option><option value="T">T-stop</option></select></div>
     <div class="menu-row">
       <span>Middle Gray Reference (Ratios)</span>
@@ -582,7 +592,7 @@
     </div>
   </div>
 
-  <script src="meter-runtime.js?v=25"></script>
+  <script src="meter-runtime.js?v=27"></script>
   <script>
     const video = document.getElementById('video');
     const viewCanvas = document.getElementById('view-canvas');
@@ -747,6 +757,7 @@
       document.getElementById('mini-meter').style.display = (mode === 'color') ? 'flex' : 'none';
       document.getElementById('ratio-hud').style.display  = (mode === 'ratios') ? 'flex' : 'none';
       document.getElementById('el-legend').style.display  = (mode === 'elzone') ? 'flex' : 'none';
+      document.getElementById('zone-map-toggle').hidden=mode!=='elzone';
       if(mode==='composition')menu.classList.add('open');else menu.classList.remove('open');
     }
 
@@ -761,7 +772,7 @@
     const overlayControl=document.getElementById('zone-overlay-strength');
     const legendHeading=document.createElement('span');
     legendHeading.style.cssText='font-size:10px;letter-spacing:.04em;white-space:nowrap';
-    legendHeading.textContent='A ZONE · 9';legendEl.appendChild(legendHeading);
+    legendHeading.textContent='ZONEZ · 9';legendEl.appendChild(legendHeading);
     const overlayReadout=document.createElement('output');
     overlayReadout.id='zone-overlay-readout';overlayReadout.setAttribute('aria-live','polite');
     overlayReadout.style.cssText='font-size:14px;font-weight:800;margin-bottom:3px';
@@ -771,7 +782,7 @@
       overlayReadout.textContent=percent+'%';zonesVisible=true;
     }
     function cycleZoneOverlay(){
-      const steps=[0,25,50,75,100],current=Math.round(zoneOverlayStrength*100);
+      const steps=[0,35,50,75,100],current=Math.round(zoneOverlayStrength*100);
       setZoneOverlay(steps[(steps.indexOf(current)+1)%steps.length]);
     }
     legendEl.addEventListener('click',event=>{event.stopPropagation();cycleZoneOverlay();});
@@ -783,8 +794,9 @@
       const under=Number(document.getElementById('zone-under-boundary').value),over=Number(document.getElementById('zone-over-boundary').value);
       if(count===3&&(!Number.isFinite(under)||under<=0||!Number.isFinite(over)||over<=0))return;
       activeZoneMap=cineZoneMap(count,under,over);
+      for(const choice of document.querySelectorAll('#zone-map-toggle [data-zone-count]'))choice.classList.toggle('active',Number(choice.dataset.zoneCount)===count);
       document.getElementById('zone-three-controls').hidden=count!==3;
-      legendHeading.textContent='A ZONE · '+count;
+      legendHeading.textContent='ZONEZ · '+count;
       legendEl.style.setProperty('--zone-number-size',count===3?'30px':count===5?'23px':'15px');
       legendRows.replaceChildren(...activeZoneMap.map(z=>{
         const row=document.createElement('div');row.className='el-row';
@@ -798,6 +810,10 @@
       }));
       zonesVisible=true;
     }
+    document.getElementById('zone-map-toggle').addEventListener('click',()=>{
+      const select=document.getElementById('zone-map-size'),sizes=[3,5,9];
+      select.value=String(sizes[(sizes.indexOf(Number(select.value))+1)%sizes.length]);updateZoneMap();
+    });
     document.getElementById('zone-map-size').addEventListener('change',updateZoneMap);
     for(const id of ['zone-under-boundary','zone-over-boundary'])document.getElementById(id).addEventListener('input',updateZoneMap);
     updateZoneMap();
@@ -976,6 +992,7 @@
       else if (n === 2) statusEl.innerText = 'Tap to place C';
       else if (n === 3) statusEl.innerText = 'Tap to place D';
       else statusEl.innerText = 'A–D · Drag any spot or Clear';
+      if(document.getElementById('ratio-sticky').checked){const lost=ratioNodes.map((node,i)=>['weak','lost'].includes(node.trackState)?cineSpotLetter(i):'').filter(Boolean);if(lost.length)statusEl.innerText+=' · Reposition '+lost.join(', ');}
     }
 
     const flashEl = document.getElementById('flash-overlay');
@@ -1068,7 +1085,7 @@
       snapCanvas.toBlob(blob=>{
         if(generation!==captureGeneration)return;
         if(!blob){saveBtn.textContent='Try capture again';showNotice('Could not prepare the photo. Resume and try again.');return;}
-        preparedPhoto=new File([blob],`cine-scout-${Date.now()}.png`,{type:'image/png'});
+        preparedPhoto=new File([blob],`cinelit-meter-${Date.now()}.png`,{type:'image/png'});
         saveBtn.disabled=false;saveBtn.textContent='Save / Share photo';
       },'image/png');
     }
@@ -1078,7 +1095,7 @@
       try {
         if(navigator.canShare?.({files:[file]})) {
           // Native share invoked directly inside the tap, not in a toBlob callback.
-          await navigator.share({files:[file],title:'CineLit Meter frame'});exitScreenshotMode();return;
+          await navigator.share({files:[file],title:'CINELIT METER frame'});exitScreenshotMode();return;
         }
       } catch(err) {
         if(err.name==='AbortError')return;
@@ -1125,6 +1142,7 @@
       const hitIdx = ratioNodes.findIndex(n => Math.hypot((n.x - nx) * rect.width, (n.y - ny) * rect.height) < 40);
       if (hitIdx !== -1) {
         draggingNodeIndex = hitIdx;
+        cineResetRatioTracking(ratioNodes[hitIdx]);
         return;
       }
 
@@ -1158,6 +1176,7 @@
     viewCanvas.addEventListener('pointermove', e => {
       if (draggingNodeIndex === -1 || activeMode !== 'ratios' || isScreenshotMode) return;
       const rect = viewCanvas.getBoundingClientRect();
+      cineResetRatioTracking(ratioNodes[draggingNodeIndex]);ratioNodes[draggingNodeIndex].smoothY=null;
       ratioNodes[draggingNodeIndex].x = Math.max(0.04, Math.min(0.96, (e.clientX - rect.left) / rect.width));
       ratioNodes[draggingNodeIndex].y = Math.max(0.05, Math.min(0.92, (e.clientY - rect.top) / rect.height));
     });
@@ -1199,6 +1218,20 @@
       return 2 ** Math.round(Math.log2(Math.max(1, r)));
     }
 
+    const ratioTrackingCanvas=document.createElement('canvas');
+    const ratioTrackingContext=ratioTrackingCanvas.getContext('2d',{willReadFrequently:true});
+    document.getElementById('ratio-sticky').addEventListener('change',()=>{ratioNodes.forEach(cineResetRatioTracking);updateRatioHudText();});
+    function updateRatioTracking(){
+      if(!document.getElementById('ratio-sticky').checked||isFrozen||isScreenshotMode||menu.classList.contains('open')||!ratioNodes.length)return;
+      const scale=Math.min(192/rawCanvas.width,144/rawCanvas.height);
+      const width=Math.max(12,Math.round(rawCanvas.width*scale)),height=Math.max(12,Math.round(rawCanvas.height*scale));
+      if(ratioTrackingCanvas.width!==width||ratioTrackingCanvas.height!==height){ratioTrackingCanvas.width=width;ratioTrackingCanvas.height=height;}
+      ratioTrackingContext.drawImage(rawCanvas,0,0,width,height);
+      const frame=cineTrackingFrame(ratioTrackingContext.getImageData(0,0,width,height).data,width,height);
+      ratioNodes.forEach((node,i)=>{if(i!==draggingNodeIndex)cineTrackRatioNode(node,frame);});
+      updateRatioHudText();
+    }
+
     function drawMultiRatiosOverlay(ctx, width, height) {
       if (ratioNodes.length === 0) return;
       const pts = ratioNodes.map(n => ({
@@ -1231,7 +1264,9 @@
         const ratioStr = p1.meter.Y >= p2.meter.Y ? `${snapped}:1` : `1:${snapped}`;
         const label = ratioStr;
         const notation=document.getElementById('ratio-stop-notation').value;
-        const detail = `${cineSpotLetter(edge.from)}: ${notation}/${p1.meter.fStop}   ${cineSpotLetter(edge.to)}: ${notation}/${p2.meter.fStop}`;
+        const firstStop=`${cineSpotLetter(edge.from)} ${notation}(${p1.meter.fStop})`;
+        const secondStop=`${cineSpotLetter(edge.to)} ${notation}(${p2.meter.fStop})`;
+        const detail=firstStop+'   '+secondStop;
         const mx=(p1.x+p2.x)/2,my=(p1.y+p2.y)/2;
         ctx.font='700 14px -apple-system, BlinkMacSystemFont, sans-serif';
         const detailW=ctx.measureText(detail).width;
@@ -1245,7 +1280,10 @@
         ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#f4f7f8';
         ctx.fillText(label,cx,box.y+20);
         ctx.font='700 14px -apple-system, BlinkMacSystemFont, sans-serif';
-        ctx.fillText(detail,cx,box.y+44);
+        const firstWidth=ctx.measureText(firstStop).width,secondWidth=ctx.measureText(secondStop).width;
+        const left=cx-(firstWidth+secondWidth+16)/2;ctx.textAlign='left';
+        ctx.fillStyle=CINE_RATIO_COLOURS[edge.from];ctx.fillText(firstStop,left,box.y+44);
+        ctx.fillStyle=CINE_RATIO_COLOURS[edge.to];ctx.fillText(secondStop,left+firstWidth+16,box.y+44);
         ctx.restore();
       });
 
@@ -1259,11 +1297,12 @@
         ctx.fillStyle = 'rgba(0, 0, 0, 0.65)';
         ctx.fill();
         ctx.lineWidth = 3;
-        ctx.strokeStyle = '#ffffff';
-        ctx.stroke();
+        ctx.strokeStyle = CINE_RATIO_COLOURS[index];
+        if(document.getElementById('ratio-sticky').checked&&['lost','weak'].includes(ratioNodes[index].trackState))ctx.setLineDash([3,3]);
+        ctx.stroke();ctx.setLineDash([]);
 
         ctx.font='900 16px -apple-system, BlinkMacSystemFont, sans-serif';
-        ctx.fillStyle='#f4f7f8';ctx.textAlign='center';ctx.textBaseline='middle';
+        ctx.fillStyle=CINE_RATIO_COLOURS[index];ctx.textAlign='center';ctx.textBaseline='middle';
         ctx.fillText(cineSpotLetter(index),0,1);
         ctx.restore();
       });
@@ -1451,6 +1490,7 @@
           scoutDrawGuide(viewCtx,viewCanvas.width,viewCanvas.height,guideGeometry,guideAlignment,document.getElementById('guide-glow').checked,Number(document.getElementById('guide-threshold').value),document.getElementById('guide-visible').checked);
         }
         if (activeMode === 'ratios') {
+          if(frameCount%3===0)updateRatioTracking();
           drawMultiRatiosOverlay(viewCtx, viewCanvas.width, viewCanvas.height);
         }
 

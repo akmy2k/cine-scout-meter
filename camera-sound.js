@@ -74,7 +74,7 @@ class ScoutSoundMeter {
   async saveRecording(){
     if(!this.recordedFile)return;
     const file=this.recordedFile;
-    try{if(navigator.canShare?.({files:[file]})){await navigator.share({files:[file],title:'CineLit Meter room tone'});return;}}
+    try{if(navigator.canShare?.({files:[file]})){await navigator.share({files:[file],title:'CINELIT METER room tone'});return;}}
     catch(error){if(error.name==='AbortError')return;}
     const url=URL.createObjectURL(file),link=document.createElement('a');link.href=url;link.download=file.name;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
   }

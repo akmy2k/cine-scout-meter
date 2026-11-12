@@ -22,10 +22,10 @@ assert.throws(()=>cineZoneMap(3,0,1));
 for(let r=0;r<256;r+=17)for(let g=0;g<256;g+=17)for(let b=0;b<256;b+=17) assert.equal(cineZoneForRGBFast(r,g,b),cineZoneForRGB(r,g,b));
 assert.deepEqual([0,1,2,3].map(cineSpotLetter),['A','B','C','D']);
 const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
-const snap=html.slice(html.indexOf('    function snapRatioGuesstimate'),html.indexOf('    function drawMultiRatiosOverlay'));
+const snap=html.match(/    function snapRatioGuesstimate[\s\S]*?\n    }/)[0];
 vm.runInThisContext(snap);
 for(let stop=0;stop<=12;stop++)assert.equal(snapRatioGuesstimate(2**stop),2**stop);
 assert.equal(snapRatioGuesstimate(3),4);assert.equal(snapRatioGuesstimate(6),8);assert.equal(snapRatioGuesstimate(12),16);
 for(let ratio=1;ratio<100;ratio+=.17)assert(Number.isInteger(Math.log2(snapRatioGuesstimate(ratio))));
 
-console.log('PASS A ZONE map sizes, custom boundaries, linear RGB and whole-stop ratio display');
+console.log('PASS ZONEZ custom maps, linear RGB and whole-stop ratio display');
