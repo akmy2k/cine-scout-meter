@@ -1,4 +1,4 @@
-const CACHE = 'cine-scout-meter-v28-mobile-camera';
+const CACHE = 'cine-scout-meter-v30-compact-controls';
 const ROOT = new URL('./', self.location.href);
 self.addEventListener('install', event => {
   event.waitUntil((async () => {

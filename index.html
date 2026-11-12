@@ -370,6 +370,21 @@
       #zone-map-toggle {min-height:28px;padding:2px;}
       #zone-map-toggle span {padding:3px 4px;font-size:12px;}
     }
+    /* One compact header group: Controls, camera-side icons, reset. */
+    #meter-top-actions {position:fixed;top:max(8px,env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:35;display:flex;gap:3px;align-items:center;}
+    #meter-top-actions #menu-handle {position:static;transform:none;left:auto;top:auto;min-width:100px;}
+    #meter-top-actions #camera-facing-tools {position:static;transform:none;left:auto;top:auto;padding:0;border:0;background:none;gap:2px;display:flex;}
+    #meter-top-actions #camera-facing-tools button {width:29px;min-width:29px;min-height:40px;padding:3px;display:flex;align-items:center;justify-content:center;border:1px solid #52665e;border-radius:7px;background:rgba(12,21,23,.94);color:#d3e3df;}
+    #meter-top-actions #camera-facing-tools button[aria-pressed="true"] {background:#315057;border-color:#b5d5d2;color:white;}
+    #meter-top-actions #reset-view-btn {position:static;left:auto;top:auto;width:30px;min-width:30px;transform:none;}
+    body.mode-sound #meter-top-actions #camera-facing-tools {display:none;}
+    body.screenshot-mode #meter-top-actions {display:none;}
+    #color-info-toggle {width:auto;min-width:30px;height:20px;padding:3px 6px;border-radius:4px;font:600 10px/1 system-ui,sans-serif;}
+    @media(max-width:480px){
+      #meter-top-actions #menu-handle {min-width:76px;padding:0 7px;font-size:11px;gap:4px;}
+      #meter-top-actions #camera-facing-tools button {width:26px;min-width:26px;min-height:36px;padding:2px;}
+      #meter-top-actions #reset-view-btn {width:27px;min-width:27px;}
+    }
   </style>
 </head>
 <body>
@@ -392,7 +407,7 @@
     <div id="zoom-tools"><div class="mini-control-title"><label for="camera-zoom">Zoom</label><output id="zoom-value">1.0×</output></div><div class="zoom-track"><input type="range" id="camera-zoom" min="1" max="3" step="0.1" value="1" aria-label="Camera zoom"><div id="zoom-ticks" aria-hidden="true"><span style="left:0%" title="1×"></span><span style="left:25%" title="1.5×"></span><span style="left:50%" title="2×"></span><span style="left:100%" title="3×"></span></div></div></div>
   </div>
   <button id="reset-view-btn" aria-label="Reset to 60/30/10" title="Reset to clean 60/30/10 feed">↺</button>
-  <div id="camera-facing-tools" role="group" aria-label="Camera side"><button type="button" id="back-camera-btn" aria-label="Back camera" aria-pressed="true">Back</button><button type="button" id="front-camera-btn" aria-label="Front camera" aria-pressed="false">Front</button></div>
+  <div id="camera-facing-tools" role="group" aria-label="Camera side"><button type="button" id="back-camera-btn" aria-label="Back camera" title="Back camera" aria-pressed="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h5l2-3h4l2 3h5v13H3Z"/><path d="M16 13H8m3-3-3 3 3 3"/></svg></button><button type="button" id="front-camera-btn" aria-label="Front camera" title="Front camera" aria-pressed="false"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h5l2-3h4l2 3h5v13H3Z"/><path d="M8 13h8m-3-3 3 3-3 3"/></svg></button></div>
   <div id="reference-quick" hidden>
     <label><input type="checkbox" id="reference-quick-enabled" checked> Reference</label>
     <input type="range" id="reference-quick-opacity" min="0" max="100" step="1" value="40" aria-label="Live reference opacity"><output id="reference-quick-value">40%</output>
@@ -403,7 +418,7 @@
   </section>
   <div id="grid"></div>
   <div id="el-legend" role="button" tabindex="0" aria-label="Cycle ZONEZ overlay strength"></div>
-  <button type="button" id="zone-map-toggle" aria-label="Cycle ZONEZ map size" title="Tap to cycle 3, 5 and 9 zones" hidden><span data-zone-count="3">3</span><span data-zone-count="5">5</span><span data-zone-count="9">9</span></button>
+  <button type="button" id="zone-map-toggle" aria-label="Cycle ZONEZ map size" title="Tap to cycle 9 → 5 → 3 zones" hidden>9</button>
   <div id="flash-overlay"></div>
 
   <div id="shot-bar">
@@ -583,7 +598,7 @@
 
     </section>
     <div id="mini-meter">
-      <button id="color-info-toggle" type="button" aria-label="Colour palette information" aria-controls="color-controls" aria-expanded="false" title="Show or hide colour labels">i</button>
+      <button id="color-info-toggle" type="button" aria-label="Colour palette information" aria-controls="color-controls" aria-expanded="false" title="Show or hide colour labels">Info</button>
       <div class="live-bar">
         <div class="bar-seg" id="bseg-0" style="width:60%;"></div>
         <div class="bar-seg" id="bseg-1" style="width:30%;"></div>
@@ -609,7 +624,7 @@
     </div>
   </div>
 
-  <script src="meter-runtime.js?v=28"></script>
+  <script src="meter-runtime.js?v=30"></script>
   <script>
     const video = document.getElementById('video');
     const viewCanvas = document.getElementById('view-canvas');
@@ -812,7 +827,7 @@
       const under=Number(document.getElementById('zone-under-boundary').value),over=Number(document.getElementById('zone-over-boundary').value);
       if(count===3&&(!Number.isFinite(under)||under<=0||!Number.isFinite(over)||over<=0))return;
       activeZoneMap=cineZoneMap(count,under,over);
-      for(const choice of document.querySelectorAll('#zone-map-toggle [data-zone-count]'))choice.classList.toggle('active',Number(choice.dataset.zoneCount)===count);
+      document.getElementById('zone-map-toggle').textContent=String(count);
       document.getElementById('zone-three-controls').hidden=count!==3;
       legendHeading.textContent='ZONEZ · '+count;
       legendEl.style.setProperty('--zone-number-size',count===3?'30px':count===5?'23px':'15px');
@@ -838,7 +853,7 @@
     window.addEventListener('resize',positionZoneMapToggle);
     window.visualViewport?.addEventListener('resize',positionZoneMapToggle);
     document.getElementById('zone-map-toggle').addEventListener('click',()=>{
-      const select=document.getElementById('zone-map-size'),sizes=[3,5,9];
+      const select=document.getElementById('zone-map-size'),sizes=[9,5,3];
       select.value=String(sizes[(sizes.indexOf(Number(select.value))+1)%sizes.length]);updateZoneMap();
     });
     document.getElementById('zone-map-size').addEventListener('change',updateZoneMap);
@@ -1627,6 +1642,8 @@
       if(video.readyState<2)startCamera();
     }
     document.getElementById('reset-view-btn').addEventListener('click',resetToColorFeed);
+    const topActions=document.createElement('div');topActions.id='meter-top-actions';
+    topActions.append(handle,document.getElementById('camera-facing-tools'),document.getElementById('reset-view-btn'));document.body.appendChild(topActions);
 
     // A refresh returns to the original clean colour feed, never a measurement overlay.
     document.getElementById('grid-toggle').checked=false;
