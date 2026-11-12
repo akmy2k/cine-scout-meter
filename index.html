@@ -344,7 +344,7 @@
     #el-legend {width:116px;height:min(300px,calc(100dvh - 130px));box-sizing:border-box;--zone-number-size:15px;}
     #zone-legend-rows {display:flex;flex:1;min-height:0;flex-direction:column;gap:2px;}
     #el-legend .el-row {flex:1;min-height:0;gap:7px;line-height:1;}
-    #el-legend .el-number {font-size:var(--zone-number-size);font-weight:800;}
+    #el-legend .el-number {font-size:var(--zone-label-size,var(--zone-number-size));font-weight:800;}
     #el-legend .el-row small {font-size:10px;}
     #el-legend .el-swatch {height:65%;max-height:30px;min-height:8px;}
     #el-legend {height:min(300px,calc(100dvh - 180px));max-height:calc(100dvh - 180px);}
@@ -354,6 +354,22 @@
     #zone-map-toggle span.active {background:#2563eb;color:white;font-weight:800;}
     #zone-map-toggle:focus-visible {outline:2px solid #facc15;outline-offset:3px;}
     body.screenshot-mode #zone-map-toggle {display:none;}
+    #camera-facing-tools {position:fixed;top:calc(max(8px,env(safe-area-inset-top)) + 49px);left:50%;transform:translateX(-50%);display:flex;gap:3px;z-index:10;padding:3px;border:1px solid #52665e;border-radius:8px;background:rgba(0,0,0,.85);}
+    #camera-facing-tools button {background:none;border:0;color:#a9b8b6;padding:5px 12px;min-height:30px;min-width:54px;border-radius:5px;font-size:12px;cursor:pointer;}
+    #camera-facing-tools button[aria-pressed="true"] {background:#263c3d;color:#fff;font-weight:800;}
+    body.menu-open #camera-facing-tools,body.mode-sound #camera-facing-tools,body.screenshot-mode #camera-facing-tools {display:none;}
+    @media(max-width:600px),(max-height:500px){
+      #el-legend {--zone-label-size:var(--zone-mobile-number-size,13px);width:max-content;max-width:86px;height:auto;max-height:calc(100dvh - 130px);padding:5px 6px;gap:2px;border-radius:6px;}
+      #el-legend>span {display:none;}
+      #zone-overlay-readout {font-size:11px!important;margin-bottom:2px!important;line-height:1.1;}
+      #zone-legend-rows {flex:none;gap:3px;}
+      #el-legend .el-row {flex:none;gap:4px;}
+      #el-legend .el-number {font-size:var(--zone-mobile-number-size,13px);line-height:1.05;}
+      #el-legend .el-row small {font-size:8px;}
+      #el-legend .el-swatch {width:5px;height:10px;min-height:0;max-height:14px;border:0;}
+      #zone-map-toggle {min-height:28px;padding:2px;}
+      #zone-map-toggle span {padding:3px 4px;font-size:12px;}
+    }
   </style>
 </head>
 <body>
@@ -376,6 +392,7 @@
     <div id="zoom-tools"><div class="mini-control-title"><label for="camera-zoom">Zoom</label><output id="zoom-value">1.0×</output></div><div class="zoom-track"><input type="range" id="camera-zoom" min="1" max="3" step="0.1" value="1" aria-label="Camera zoom"><div id="zoom-ticks" aria-hidden="true"><span style="left:0%" title="1×"></span><span style="left:25%" title="1.5×"></span><span style="left:50%" title="2×"></span><span style="left:100%" title="3×"></span></div></div></div>
   </div>
   <button id="reset-view-btn" aria-label="Reset to 60/30/10" title="Reset to clean 60/30/10 feed">↺</button>
+  <div id="camera-facing-tools" role="group" aria-label="Camera side"><button type="button" id="back-camera-btn" aria-label="Back camera" aria-pressed="true">Back</button><button type="button" id="front-camera-btn" aria-label="Front camera" aria-pressed="false">Front</button></div>
   <div id="reference-quick" hidden>
     <label><input type="checkbox" id="reference-quick-enabled" checked> Reference</label>
     <input type="range" id="reference-quick-opacity" min="0" max="100" step="1" value="40" aria-label="Live reference opacity"><output id="reference-quick-value">40%</output>
@@ -592,7 +609,7 @@
     </div>
   </div>
 
-  <script src="meter-runtime.js?v=27"></script>
+  <script src="meter-runtime.js?v=28"></script>
   <script>
     const video = document.getElementById('video');
     const viewCanvas = document.getElementById('view-canvas');
@@ -758,6 +775,7 @@
       document.getElementById('ratio-hud').style.display  = (mode === 'ratios') ? 'flex' : 'none';
       document.getElementById('el-legend').style.display  = (mode === 'elzone') ? 'flex' : 'none';
       document.getElementById('zone-map-toggle').hidden=mode!=='elzone';
+      positionZoneMapToggle();
       if(mode==='composition')menu.classList.add('open');else menu.classList.remove('open');
     }
 
@@ -798,18 +816,27 @@
       document.getElementById('zone-three-controls').hidden=count!==3;
       legendHeading.textContent='ZONEZ · '+count;
       legendEl.style.setProperty('--zone-number-size',count===3?'30px':count===5?'23px':'15px');
+      legendEl.style.setProperty('--zone-mobile-number-size',count===3?'24px':count===5?'18px':'13px');
       legendRows.replaceChildren(...activeZoneMap.map(z=>{
         const row=document.createElement('div');row.className='el-row';
         const swatch=document.createElement('i');swatch.className='el-swatch';swatch.style.background=z.hex;
         const number=document.createElement('span');number.className='el-number';number.textContent=z.stop===0?'0':z.label;
         number.title=z.label+' stops from 18% gray';
-        if(number.textContent.length>4)number.style.fontSize=Math.max(10,(count===3?30:count===5?23:15)*4/number.textContent.length)+'px';
+        if(number.textContent.length>4)number.style.fontSize='calc(var(--zone-label-size,var(--zone-number-size)) * '+(4/number.textContent.length)+')';
         row.append(swatch,number);
         if(z.stop===0){const gray=document.createElement('small');gray.textContent='18%';row.appendChild(gray);}
         return row;
       }));
-      zonesVisible=true;
+      zonesVisible=true;positionZoneMapToggle();
     }
+    function positionZoneMapToggle(){
+      const toggle=document.getElementById('zone-map-toggle');if(toggle.hidden)return;
+      const box=legendEl.getBoundingClientRect();
+      toggle.style.left=box.left+'px';toggle.style.width=box.width+'px';
+      toggle.style.top=Math.min(innerHeight-toggle.offsetHeight-8,box.bottom+6)+'px';
+    }
+    window.addEventListener('resize',positionZoneMapToggle);
+    window.visualViewport?.addEventListener('resize',positionZoneMapToggle);
     document.getElementById('zone-map-toggle').addEventListener('click',()=>{
       const select=document.getElementById('zone-map-size'),sizes=[3,5,9];
       select.value=String(sizes[(sizes.indexOf(Number(select.value))+1)%sizes.length]);updateZoneMap();
@@ -880,6 +907,18 @@
       if(!hardwareZoom||uploadedImg){previewZoom=value;return;}
       try{await cameraTrack?.applyConstraints({advanced:[{zoom:value}]});}catch{hardwareZoom=false;previewZoom=Math.max(1,value);showNotice('Hardware zoom unavailable. Using a preview crop.');}
     });
+    function syncCameraFacingButtons(){
+      document.getElementById('back-camera-btn').setAttribute('aria-pressed',String(facingMode==='environment'));
+      document.getElementById('front-camera-btn').setAttribute('aria-pressed',String(facingMode==='user'));
+    }
+    function selectCameraSide(side){
+      if(isScreenshotMode)exitScreenshotMode();
+      isFrozen=false;document.getElementById('freeze-toggle').checked=false;
+      uploadedImg=null;fileInput.value='';selectedCamera='';facingMode=side;
+      document.getElementById('live-btn').style.display='none';syncCameraFacingButtons();startCamera();
+    }
+    document.getElementById('back-camera-btn').addEventListener('click',()=>selectCameraSide('environment'));
+    document.getElementById('front-camera-btn').addEventListener('click',()=>selectCameraSide('user'));
     navigator.mediaDevices?.addEventListener?.('devicechange',refreshCameras);
     async function startCamera() {
       const generation=++cameraGeneration;
@@ -891,7 +930,13 @@
         try{stream=await getVideo();}catch(error){if(!selectedCamera)throw error;selectedCamera='';stream=await getVideo();showNotice('Selected camera unavailable. Using the default camera.');}
         if(generation!==cameraGeneration){stream.getTracks().forEach(t=>t.stop());return;}
         video.srcObject=stream;cameraTrack=stream.getVideoTracks()[0];selectedCamera=cameraTrack.getSettings().deviceId||'';
-        setupCameraControls();await video.play();await refreshCameras();
+        setupCameraControls();await video.play();
+        const actualFacing=cameraTrack.getSettings?.().facingMode;
+        if(actualFacing==='user'||actualFacing==='environment'){
+          if(actualFacing!==facingMode)showNotice('The requested camera side is unavailable. Showing the camera this browser provides.');
+          facingMode=actualFacing;
+        }
+        syncCameraFacingButtons();await refreshCameras();
       } catch (err) { if(generation!==cameraGeneration)return;cameraTrack=null;setupCameraControls();showNotice('Camera unavailable or permission denied. You can still open a photo from Controls.'); }
     }
 

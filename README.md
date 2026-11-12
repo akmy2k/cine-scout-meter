@@ -32,3 +32,8 @@ The first nonzero colour-overlay level is 35%; tapping the legend cycles 0/35/50
 A/B/C/D use cyan/pink/yellow/green in the markers and readings. Stop values are parenthesized, for example A f(4) or A T(4). The large ratio remains numeric and rounded to whole-stop factors.
 
 Sticky ratio spots is enabled by default. Markers follow nearby image texture locally; no camera images are uploaded. This is a small-motion texture tracker, not guaranteed face/object recognition. Uniform, repeating, blurred or occluded targets can lose tracking; a dashed ring and Reposition message hold the last location instead of jumping. Drag the letter onto a textured part of the target to reattach. Disable Sticky ratio spots to pin points to the screen. Large jumps, source changes or frame resizing may require repositioning.
+
+
+## Mobile view and camera sides
+
+On mobile the ZONEZ legend wraps the numbers closely, with the 3/5/9 button directly below it. Desktop keeps the larger frame. Back and Front buttons below Controls request the corresponding camera and highlight the selected side. Actual camera availability depends on the device/browser; unavailable sides use the camera the browser exposes. Flip Lens and the camera/lens list remain in Controls.
