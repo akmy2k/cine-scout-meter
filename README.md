@@ -36,8 +36,8 @@ Sticky ratio spots is enabled by default. Markers follow nearby image texture lo
 
 ## Mobile view and camera sides
 
-On mobile the ZONEZ legend wraps the numbers closely, with the 3/5/9 button directly below it. Desktop keeps the larger frame. Back and Front buttons below Controls request the corresponding camera and highlight the selected side. Actual camera availability depends on the device/browser; unavailable sides use the camera the browser exposes. Flip Lens and the camera/lens list remain in Controls.
+On mobile the ZONEZ legend wraps the numbers closely, with the 3/5/9 button directly below it. Desktop keeps the larger frame. A single flip-camera symbol to the left of Controls alternates between back and front cameras. Actual camera availability depends on the device/browser; unavailable sides use the camera the browser exposes. Flip Lens and the camera/lens list remain in Controls.
 
 ## Compact toolbar
 
-Camera-arrow buttons immediately to the right of Controls select back/front cameras. The circular arrow beside them returns to the clean colour feed. The palette-information control is a small Info text button. The ZONEZ count button displays only its current number and cycles 9→5→3; the detailed Controls selector remains synchronized.
+The single flip-camera symbol immediately to the left of Controls switches between front and back cameras. The circular arrow beside them returns to the clean colour feed. The palette-information control is a small Info text button. The ZONEZ count button displays only its current number and cycles 9→5→3; the detailed Controls selector remains synchronized.

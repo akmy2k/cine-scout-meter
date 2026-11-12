@@ -385,6 +385,9 @@
       #meter-top-actions #camera-facing-tools button {width:26px;min-width:26px;min-height:36px;padding:2px;}
       #meter-top-actions #reset-view-btn {width:27px;min-width:27px;}
     }
+    #meter-top-actions #camera-flip-btn {width:32px;min-width:32px;height:40px;padding:4px;display:flex;align-items:center;justify-content:center;border:1px solid #52665e;border-radius:8px;background:rgba(12,21,23,.94);color:#e3efeb;cursor:pointer;}
+    body.mode-sound #meter-top-actions #camera-flip-btn {display:none;}
+    @media(max-width:480px){#meter-top-actions #camera-flip-btn{width:28px;min-width:28px;height:36px;padding:3px;}}
   </style>
 </head>
 <body>
@@ -407,7 +410,7 @@
     <div id="zoom-tools"><div class="mini-control-title"><label for="camera-zoom">Zoom</label><output id="zoom-value">1.0×</output></div><div class="zoom-track"><input type="range" id="camera-zoom" min="1" max="3" step="0.1" value="1" aria-label="Camera zoom"><div id="zoom-ticks" aria-hidden="true"><span style="left:0%" title="1×"></span><span style="left:25%" title="1.5×"></span><span style="left:50%" title="2×"></span><span style="left:100%" title="3×"></span></div></div></div>
   </div>
   <button id="reset-view-btn" aria-label="Reset to 60/30/10" title="Reset to clean 60/30/10 feed">↺</button>
-  <div id="camera-facing-tools" role="group" aria-label="Camera side"><button type="button" id="back-camera-btn" aria-label="Back camera" title="Back camera" aria-pressed="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h5l2-3h4l2 3h5v13H3Z"/><path d="M16 13H8m3-3-3 3 3 3"/></svg></button><button type="button" id="front-camera-btn" aria-label="Front camera" title="Front camera" aria-pressed="false"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h5l2-3h4l2 3h5v13H3Z"/><path d="M8 13h8m-3-3 3 3-3 3"/></svg></button></div>
+  <button type="button" id="camera-flip-btn" aria-label="Flip camera" title="Switch to front camera" data-facing="environment"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h5l2-3h4l2 3h5v13H3Z"/><path d="M7 12h9l-2-2m3 6H8l2 2"/></svg></button>
   <div id="reference-quick" hidden>
     <label><input type="checkbox" id="reference-quick-enabled" checked> Reference</label>
     <input type="range" id="reference-quick-opacity" min="0" max="100" step="1" value="40" aria-label="Live reference opacity"><output id="reference-quick-value">40%</output>
@@ -624,7 +627,7 @@
     </div>
   </div>
 
-  <script src="meter-runtime.js?v=30"></script>
+  <script src="meter-runtime.js?v=31"></script>
   <script>
     const video = document.getElementById('video');
     const viewCanvas = document.getElementById('view-canvas');
@@ -923,8 +926,9 @@
       try{await cameraTrack?.applyConstraints({advanced:[{zoom:value}]});}catch{hardwareZoom=false;previewZoom=Math.max(1,value);showNotice('Hardware zoom unavailable. Using a preview crop.');}
     });
     function syncCameraFacingButtons(){
-      document.getElementById('back-camera-btn').setAttribute('aria-pressed',String(facingMode==='environment'));
-      document.getElementById('front-camera-btn').setAttribute('aria-pressed',String(facingMode==='user'));
+      const button=document.getElementById('camera-flip-btn');
+      button.dataset.facing=facingMode;
+      button.title=facingMode==='user'?'Switch to back camera':'Switch to front camera';
     }
     function selectCameraSide(side){
       if(isScreenshotMode)exitScreenshotMode();
@@ -932,8 +936,7 @@
       uploadedImg=null;fileInput.value='';selectedCamera='';facingMode=side;
       document.getElementById('live-btn').style.display='none';syncCameraFacingButtons();startCamera();
     }
-    document.getElementById('back-camera-btn').addEventListener('click',()=>selectCameraSide('environment'));
-    document.getElementById('front-camera-btn').addEventListener('click',()=>selectCameraSide('user'));
+    document.getElementById('camera-flip-btn').addEventListener('click',()=>selectCameraSide(facingMode==='user'?'environment':'user'));
     navigator.mediaDevices?.addEventListener?.('devicechange',refreshCameras);
     async function startCamera() {
       const generation=++cameraGeneration;
@@ -1643,7 +1646,7 @@
     }
     document.getElementById('reset-view-btn').addEventListener('click',resetToColorFeed);
     const topActions=document.createElement('div');topActions.id='meter-top-actions';
-    topActions.append(handle,document.getElementById('camera-facing-tools'),document.getElementById('reset-view-btn'));document.body.appendChild(topActions);
+    topActions.append(document.getElementById('camera-flip-btn'),handle,document.getElementById('reset-view-btn'));document.body.appendChild(topActions);
 
     // A refresh returns to the original clean colour feed, never a measurement overlay.
     document.getElementById('grid-toggle').checked=false;
