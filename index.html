@@ -388,6 +388,43 @@
     #meter-top-actions #camera-flip-btn {width:32px;min-width:32px;height:40px;padding:4px;display:flex;align-items:center;justify-content:center;border:1px solid #52665e;border-radius:8px;background:rgba(12,21,23,.94);color:#e3efeb;cursor:pointer;}
     body.mode-sound #meter-top-actions #camera-flip-btn {display:none;}
     @media(max-width:480px){#meter-top-actions #camera-flip-btn{width:28px;min-width:28px;height:36px;padding:3px;}}
+    /* Let menu choices use the available width rather than squeezing labels. */
+    #menu > * {flex-shrink:0;}
+    #menu .feature-choices {grid-template-columns:repeat(2,minmax(0,1fr));flex-shrink:0;}
+    #menu .mode-tab {min-height:44px;padding:12px 14px;font-size:13px;line-height:1.3;white-space:normal;overflow-wrap:break-word;}
+    #menu .choice-row {gap:8px;}
+    #menu .choice-row select {min-width:160px;min-height:42px;font-size:14px;}
+    @media(max-width:600px){
+      #menu {padding-left:max(10px,env(safe-area-inset-left));padding-right:max(10px,env(safe-area-inset-right));}
+      #menu .feature-choices {grid-template-columns:minmax(0,1fr);}
+      #menu .feature-choices .mode-tab {width:100%;text-align:left;}
+      #menu .choice-row {flex-direction:column;align-items:stretch;gap:6px;}
+      #menu .choice-row select {width:100%;max-width:none;min-width:0;}
+    }
+    /* All spot controls remain visible in a bottom strip. */
+    #spot-panel {left:50%;right:auto;top:auto;bottom:max(8px,env(safe-area-inset-bottom));transform:translateX(-50%);width:min(1040px,calc(100vw - 20px));max-height:65dvh;padding:9px 10px;gap:6px;border-radius:10px;}
+    .spot-live-readings {display:flex;align-items:center;justify-content:space-between;gap:10px;}
+    #spot-reading {display:block;font-size:27px;line-height:1.1;font-weight:850;}
+    #spot-offset {display:block;font-size:10px;color:#c1d0cb;}
+    .spot-kelvin {text-align:right;}.spot-kelvin small{display:block;font-size:9px;color:#b9c9c4;}
+    #spot-temperature {font-size:30px;line-height:1.1;font-weight:850;}
+    .spot-control-rows {display:flex;flex-wrap:wrap;gap:7px;align-items:end;}
+    .spot-settings {flex:1;min-width:190px;gap:6px;}
+    #spot-panel label {font-size:10px;color:#c5d5cf;display:flex;flex-direction:column;gap:3px;}
+    #spot-panel input,#spot-panel select {font-size:16px;padding:5px;min-height:30px;box-sizing:border-box;}
+    #spot-panel select {background:#1a292b;color:white;border:1px solid #688079;border-radius:5px;}
+    .spot-match-row {flex:2;display:flex;align-items:end;gap:6px;min-width:300px;}
+    .spot-stop-entry {display:flex;gap:4px;}#spot-known-f {width:66px;}#spot-notation {width:42px;}
+    #spot-panel .spot-match-row button {min-height:32px;padding:6px 8px;font-size:11px;white-space:nowrap;}
+    .spot-known-light {flex:1;min-width:80px;}#spot-known-light{max-width:130px;}#spot-light-unit {width:56px;}
+    #spot-light-reading {font-size:12px;color:#d5e2dc;}#spot-note {font-size:10px;line-height:1.3;}
+    #spot-scale {padding:2px 0;}.spot-settings input {width:100%;}
+    @media(max-width:600px){
+      .spot-control-rows {display:grid;grid-template-columns:1fr;gap:5px;}
+      .spot-match-row {min-width:0;display:grid;grid-template-columns:1.4fr 1fr 1fr;align-items:end;}
+      .spot-known-light {grid-column:span 2;}#spot-known-light{max-width:none;width:100%;}#spot-light-unit{width:100%;}
+      #spot-panel {padding:8px;}.spot-settings {min-width:0;}
+    }
   </style>
 </head>
 <body>
@@ -421,7 +458,7 @@
   </section>
   <div id="grid"></div>
   <div id="el-legend" role="button" tabindex="0" aria-label="Cycle ZONEZ overlay strength"></div>
-  <button type="button" id="zone-map-toggle" aria-label="Cycle ZONEZ map size" title="Tap to cycle 9 → 5 → 3 zones" hidden>9</button>
+  <button type="button" id="zone-map-toggle" aria-label="Cycle ZONEZ map size" title="Tap to cycle 9 → 7 → 5 → 3 zones" hidden>9</button>
   <div id="flash-overlay"></div>
 
   <div id="shot-bar">
@@ -443,7 +480,7 @@
 
   <div id="menu">
     <div class="drawer-section-title">Active Feature (One at a Time)</div>
-    <div class="mode-tabs" style="grid-template-columns:repeat(2,1fr)">
+    <div class="mode-tabs feature-choices">
       <button class="mode-tab active" data-mode="color">1. COLOR (60-30-10)</button>
       <button class="mode-tab" data-mode="ratios">2. RATIOS (3x)</button>
       <button class="mode-tab" data-mode="elzone">3. ZONEZ</button>
@@ -454,7 +491,7 @@
 
     <section id="zones-controls" hidden>
       <div class="drawer-section-title">ZONEZ</div>
-      <div class="menu-row"><label for="zone-map-size">Stop map</label><select id="zone-map-size" aria-label="ZONEZ map size" class="ui-select"><option value="9">9 stops · −4 to +4</option><option value="5">5 stops · −2 to +2</option><option value="3">3 stops · adjustable</option></select></div>
+      <div class="menu-row"><label for="zone-map-size">Stop map</label><select id="zone-map-size" aria-label="ZONEZ map size" class="ui-select"><option value="9">9 stops · −4 to +4</option><option value="7">7 stops · −3 to +3</option><option value="5">5 stops · −2 to +2</option><option value="3">3 stops · adjustable</option></select></div>
       <section id="zone-three-controls" hidden>
         <div class="menu-row"><label for="zone-under-boundary">Under gray · stops below</label><input type="number" id="zone-under-boundary" aria-label="Under middle gray boundary" min="0.01" step="any" value="1" style="width:75px;padding:7px;background:#152021;color:white;border:1px solid #687b73"></div>
         <div class="menu-row"><label for="zone-over-boundary">Over gray · stops above</label><input type="number" id="zone-over-boundary" aria-label="Over middle gray boundary" min="0.01" step="any" value="1" style="width:75px;padding:7px;background:#152021;color:white;border:1px solid #687b73"></div>
@@ -551,16 +588,23 @@
     <div id="composition-shapes" role="group" aria-label="Composition shapes"></div>
   </div>
   <section id="spot-panel" hidden aria-label="Spot meter">
-    <output id="spot-reading" aria-live="off">Aim at a midtone</output>
+    <div class="spot-live-readings"><div><output id="spot-reading" aria-live="off">f(2.8)</output><output id="spot-offset">18% gray reference</output></div><div class="spot-kelvin"><output id="spot-temperature">— K</output><small>Image colour estimate</small></div></div>
     <div id="spot-scale" role="img" aria-label="15 full-stop aperture positions from f/1 to f/128"></div>
-    <output id="spot-temperature">K — · use a neutral grey/white target</output>
-    <div class="spot-settings">
-      <label>Shutter 1/<input id="spot-shutter" type="number" min="1" max="32000" value="48" inputmode="numeric"></label>
-      <label>ISO<input id="spot-iso" type="number" min="1" max="204800" value="800" inputmode="numeric"></label>
-      <label>ND stops<input id="spot-nd" type="number" min="0" max="20" step="0.1" value="0" inputmode="decimal"></label>
+    <div class="spot-control-rows">
+      <div class="spot-settings">
+        <label>Shutter 1/<input id="spot-shutter" type="number" min="1" max="32000" value="48" inputmode="numeric"></label>
+        <label>ISO<input id="spot-iso" type="number" min="1" max="204800" value="800" inputmode="numeric"></label>
+        <label>ND stops<input id="spot-nd" type="number" min="0" max="20" step="0.1" value="0" inputmode="decimal"></label>
+      </div>
+      <div class="spot-match-row">
+        <label class="spot-gray-label">Gray ref / known stop<div class="spot-stop-entry"><select id="spot-notation" aria-label="Spot stop notation"><option value="f">f</option><option value="T">T</option></select><input id="spot-known-f" aria-label="Gray reference or known stop" type="number" min="0.5" max="128" step="0.1" value="2.8" inputmode="decimal"></div></label>
+        <button id="spot-calibrate" type="button">Match gray</button><button id="spot-reset-gray" type="button">18% gray</button>
+        <label class="spot-known-light">Known light · optional<input id="spot-known-light" aria-label="Known light reference" type="number" min="0.001" step="any" placeholder="Meter reading" inputmode="decimal"></label>
+        <select id="spot-light-unit" aria-label="Light reference units"><option value="lux">lux</option><option value="fc">fc</option></select>
+      </div>
     </div>
-    <details><summary>Match a trusted meter</summary><div class="spot-match"><label>Known f/<input id="spot-known-f" type="number" min="0.5" max="128" step="0.1" value="2.8" inputmode="decimal"></label><button id="spot-calibrate">Match</button></div></details>
-    <p id="spot-note">Tap the camera image to move the spot. Exposure needs a reference; Kelvin is an image estimate.</p>
+    <output id="spot-light-reading">lux / fc — match a known light reading</output>
+    <p id="spot-note">Live relative stop from 18% gray. Point at a gray card to match a trusted meter.</p>
   </section>
   <div id="hud-bottom">
     <section id="color-controls" hidden role="region" aria-label="Colour palette details">
@@ -627,7 +671,7 @@
     </div>
   </div>
 
-  <script src="meter-runtime.js?v=31"></script>
+  <script src="meter-runtime.js?v=34"></script>
   <script>
     const video = document.getElementById('video');
     const viewCanvas = document.getElementById('view-canvas');
@@ -833,8 +877,8 @@
       document.getElementById('zone-map-toggle').textContent=String(count);
       document.getElementById('zone-three-controls').hidden=count!==3;
       legendHeading.textContent='ZONEZ · '+count;
-      legendEl.style.setProperty('--zone-number-size',count===3?'30px':count===5?'23px':'15px');
-      legendEl.style.setProperty('--zone-mobile-number-size',count===3?'24px':count===5?'18px':'13px');
+      legendEl.style.setProperty('--zone-number-size',count===3?'30px':count===5?'23px':count===7?'18px':'15px');
+      legendEl.style.setProperty('--zone-mobile-number-size',count===3?'24px':count===5?'18px':count===7?'15px':'13px');
       legendRows.replaceChildren(...activeZoneMap.map(z=>{
         const row=document.createElement('div');row.className='el-row';
         const swatch=document.createElement('i');swatch.className='el-swatch';swatch.style.background=z.hex;
@@ -856,7 +900,7 @@
     window.addEventListener('resize',positionZoneMapToggle);
     window.visualViewport?.addEventListener('resize',positionZoneMapToggle);
     document.getElementById('zone-map-toggle').addEventListener('click',()=>{
-      const select=document.getElementById('zone-map-size'),sizes=[9,5,3];
+      const select=document.getElementById('zone-map-size'),sizes=[9,7,5,3];
       select.value=String(sizes[(sizes.indexOf(Number(select.value))+1)%sizes.length]);updateZoneMap();
     });
     document.getElementById('zone-map-size').addEventListener('change',updateZoneMap);
@@ -1645,6 +1689,7 @@
       if(video.readyState<2)startCamera();
     }
     document.getElementById('reset-view-btn').addEventListener('click',resetToColorFeed);
+    for(const row of menu.querySelectorAll('.menu-row'))if(row.querySelector('select'))row.classList.add('choice-row');
     const topActions=document.createElement('div');topActions.id='meter-top-actions';
     topActions.append(document.getElementById('camera-flip-btn'),handle,document.getElementById('reset-view-btn'));document.body.appendChild(topActions);
 

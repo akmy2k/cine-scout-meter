@@ -12,7 +12,7 @@ const CINE_ZONES = [
 ];
 const CINE_LINEAR=Float64Array.from({length:256},(_,i)=>{const v=i/255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4;});
 function cineZoneMap(count=9,under=1,over=1){
-  if(![3,5,9].includes(count))throw new Error('A ZONE supports 3, 5 or 9 bands');
+  if(![3,5,7,9].includes(count))throw new Error('A ZONE supports 3, 5, 7 or 9 bands');
   if(count===3){
     if(!Number.isFinite(under)||under<=0||!Number.isFinite(over)||over<=0)throw new Error('Boundaries must be positive stops from middle gray');
     return [

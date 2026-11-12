@@ -7,12 +7,15 @@ assert.equal(cineZoneForLuminance(0).stop,-4);
 assert.equal(cineZoneForLuminance(100).stop,4);
 assert.equal(cineZoneForRGB(118,118,118).stop,0);
 assert.equal(cineZoneForRGB(255,0,0).stop,0);
-for(const count of [9,5,3]){
+for(const count of [9,7,5,3]){
  const map=cineZoneMap(count);assert.equal(map.length,count);
  assert.equal(cineZoneForLuminance(.18,map).stop,0);
  assert.equal(cineZoneForLuminance(0,map),map[map.length-1]);
  assert.equal(cineZoneForLuminance(100,map),map[0]);
 }
+const seven=cineZoneMap(7);
+assert.deepEqual(seven.map(z=>z.stop),[3,2,1,0,-1,-2,-3]);
+for(let stop=-3;stop<=3;stop++)assert.equal(cineZoneForLuminance(.18*2**stop,seven).stop,stop);
 const custom=cineZoneMap(3,.7,1.3);
 assert.equal(cineZoneForLuminance(.18*2**-.7,custom).stop,-.7);
 assert.equal(cineZoneForLuminance(.18*2**1.3,custom).stop,1.3);
@@ -28,4 +31,5 @@ for(let stop=0;stop<=12;stop++)assert.equal(snapRatioGuesstimate(2**stop),2**sto
 assert.equal(snapRatioGuesstimate(3),4);assert.equal(snapRatioGuesstimate(6),8);assert.equal(snapRatioGuesstimate(12),16);
 for(let ratio=1;ratio<100;ratio+=.17)assert(Number.isInteger(Math.log2(snapRatioGuesstimate(ratio))));
 
-console.log('PASS ZONEZ custom maps, linear RGB and whole-stop ratio display');
+
+console.log('PASS 3/5/7/9 zone maps and whole-stop ratios');
